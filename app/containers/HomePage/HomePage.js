@@ -1,8 +1,28 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import ReactMarkdown from 'react-markdown';
+import decode from 'decode-html';
 import './style.scss';
+
+// let MarkdownIt = require('markdown-it'),
+//   md = new MarkdownIt();
+
+const md = require('markdown-it')()
+  .use(require('markdown-it-mathjax')());
+
+// const md = require('markdown-it')({
+//   highlight(str, lang) {
+//     if (lang && hljs.getLanguage(lang)) {
+//       try {
+//         return `<pre class="hljs"><code>${
+//           hljs.highlight(lang, str, true).value
+//         }</code></pre>`;
+//       } catch (__) {}
+//     }
+
+//     return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
+//   }
+// });
 
 export default class HomePage extends React.PureComponent {
   constructor(props) {
@@ -22,6 +42,8 @@ export default class HomePage extends React.PureComponent {
   }
 
   render() {
+    const result = md.render(this.state.markdownSrc);
+
     return (
       <article>
         <Helmet>
@@ -32,12 +54,7 @@ export default class HomePage extends React.PureComponent {
           <textarea className="editor-pane" onChange={this.handleMarkdownChange}>
             {this.state.markdownSrc}
           </textarea>
-          <div className="result-pane">
-            <ReactMarkdown
-              source={this.state.markdownSrc}
-              skipHtml={this.state.htmlMode === 'skip'}
-              escapeHtml={this.state.htmlMode === 'escape'}
-            />,
+          <div className="result-pane" dangerouslySetInnerHTML={{ __html: decode(result) }}>
           </div>
         </div>
       </article>
