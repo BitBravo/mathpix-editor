@@ -4,25 +4,16 @@ import { Helmet } from 'react-helmet';
 import decode from 'decode-html';
 import './style.scss';
 
-// let MarkdownIt = require('markdown-it'),
-//   md = new MarkdownIt();
-
 const md = require('markdown-it')()
-  .use(require('markdown-it-mathjax')());
+  .use(require('markdown-it-mathjax')())
+  .use(require('markdown-it-footnote'))
+  .use(require('markdown-it-sub'))
+  .use(require('markdown-it-sup'))
+  .use(require('markdown-it-deflist'));
+const emoji = require('markdown-it-emoji');
 
-// const md = require('markdown-it')({
-//   highlight(str, lang) {
-//     if (lang && hljs.getLanguage(lang)) {
-//       try {
-//         return `<pre class="hljs"><code>${
-//           hljs.highlight(lang, str, true).value
-//         }</code></pre>`;
-//       } catch (__) {}
-//     }
+md.use(emoji);
 
-//     return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
-//   }
-// });
 
 export default class HomePage extends React.PureComponent {
   constructor(props) {
