@@ -22,10 +22,10 @@ const md = require('markdown-it')({
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(lang, str).value;
-      } catch (__) {}
+      } catch (__) {} // eslint-disable-line
     }
 
-    return ''; // use external default escaping
+    return '';
   }
 })
   // .use(require('markdown-it-mathjax')())
