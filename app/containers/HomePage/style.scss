@@ -88,6 +88,8 @@
   .cm-math {
     color: #abb2bf;
   }
+
+  .CodeMirror-focused, .CodeMirror-selected { background: rgba(210, 202, 202, 0.16); }
 }
 
 pre {

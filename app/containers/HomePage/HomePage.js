@@ -3,23 +3,40 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import decode from 'decode-html';
 import Preview from 'components/Preview';
-import emoji from 'markdown-it-emoji';
 import CodeMirror from 'react-codemirror';
+import hljs from 'highlight.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/xml/xml';
 import './style.scss';
 
 const md = require('markdown-it')({
+  html: true,
+  xhtmlOut: false,
   breaks: true,
+  langPrefix: 'language-',
+  linkify: false,
+  typographer: true,
+  quotes: '“”‘’',
+  highlight(str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value;
+      } catch (__) {}
+    }
+
+    return ''; // use external default escaping
+  }
 })
   // .use(require('markdown-it-mathjax')())
   .use(require('markdown-it-footnote'))
   .use(require('markdown-it-sub'))
   .use(require('markdown-it-sup'))
   .use(require('markdown-it-deflist'))
+  .use(require('markdown-it-mark'))
   .use(require('markdown-it-highlightjs'), { auto: true, code: true })
-  .use(emoji);
+  .use(require('markdown-it-emoji'))
+  .use(require('markdown-it-ins'));
 
 const math = String.raw`
 # Mathematics
@@ -285,6 +302,7 @@ export default class HomePage extends React.PureComponent {
     const options = {
       lineNumbers: true,
       mode: 'markdown',
+      lineWrapping: true,
     };
 
     return (
@@ -296,7 +314,7 @@ export default class HomePage extends React.PureComponent {
         <div>
           <CodeMirror className="editor-pane" value={this.state.markdownSrc} onChange={this.updateCode} options={options} />
           <div className="result-pane">
-            <Preview math={decode(result)} />
+            <Preview wait={5000} math={decode(result)} />
           </div>
         </div>
       </article>
