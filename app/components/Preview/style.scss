@@ -2,7 +2,6 @@ preview {
   display: flex;
   justify-content: space-between;
   padding: 3em 0;
-  // border-top: 1px solid #666;
 
   a {
     color: #41addd;
@@ -11,13 +10,11 @@ preview {
       color: #6cc0e5;
     }
   }
+}
 
-
-  // .show{
-    //   display: block;
-    // }
+  #react-mathjax-preview {
+    overflow-wrap: break-word;
   }
-
   .hide{
     display: none !important;
   }

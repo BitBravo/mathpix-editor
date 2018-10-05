@@ -18,31 +18,24 @@ export default class Preview extends Component {
 
   constructor(props) {
     super(props);
+    this.delay = 500;
+    this.timeout = null;
+    this.mjRunning = false;
+    this.mjPending = false;
+    this.oldText = null;
     this.state = {
       loaded: false,
-      oldMath: props.math
     };
 
     this.onLoad = this.onLoad.bind(this);
   }
 
   componentDidMount() {
-    this.preview.innerHTML = this.props.math;
     this.state.loaded ? MathJax.Hub.Queue(['Typeset', window.MathJax.Hub, this.preview]) : loadScript(SCRIPT, this.onLoad); // eslint-disable-line
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({ oldMath: nextProps.math });
-  }
-
-  shouldComponentUpdate(nextProps) {
-    if (!nextProps.math) return false;
-    return nextProps.math !== this.state.oldMath;
-  }
-
-  componentDidUpdate() {
-    this.preview.innerHTML = this.props.math;
-    MathJax.Hub.Queue(['Typeset', window.MathJax.Hub, this.preview]); // eslint-disable-line
+  componentWillReceiveProps() {
+    this.Update();
   }
 
   onLoad = (err) => {
@@ -64,21 +57,69 @@ export default class Preview extends Component {
           }
         }
       });
-      window.MathJax.Hub.Queue(['Typeset', window.MathJax.Hub, this.preview]);
+      this.Update();
       this.setState({ loaded: true });
     }
   }
 
+  SwapBuffers() {
+    const buffer = this.preview;
+    const preview = this.buffer;
+    this.buffer = buffer.innerHTML;
+    this.preview.innerHTML = preview.innerHTML;
+    // buffer.style.visibility = "hidden"; buffer.style.position = "absolute";
+    // preview.style.position = ""; preview.style.visibility = "";
+  }
+
+  Update() {
+    const self = this;
+    if (this.timeout) { clearTimeout(this.timeout); }
+    this.timeout = setTimeout(() => {
+      self.CreatePreview(self);
+    }, this.delay);
+  }
+
+  CreatePreview() {
+    this.timeout = null;
+    if (this.mjPending) return;
+    const text = this.props.math;
+    if (text === this.oldtext) return;
+    if (this.mjRunning) {
+      this.mjPending = true;
+      MathJax.Hub.Queue(['CreatePreview', this]); //eslint-disable-line
+    } else {
+      this.buffer.innerHTML = text;
+      this.oldtext = text;
+      this.mjRunning = true;
+      MathJax.Hub.Queue( //eslint-disable-line
+        ['Typeset', MathJax.Hub, this.buffer], //eslint-disable-line
+        ['PreviewDone', this]
+      );
+    }
+  }
+
+  PreviewDone() {
+    this.mjRunning = false;
+    this.mjPending = false;
+    this.SwapBuffers();
+  }
+
+
   render() {
     return (
-      <div
-        className={this.props.className}
-        id="react-mathjax-preview"
-        style={this.props.style}
-      >
+      <div>
         <div
-          id="react-mathjax-preview-result"
+          className={this.props.className}
+          id="react-mathjax-preview"
+          style={this.props.style}
           ref={(node) => { this.preview = node; }}
+        >
+        </div>
+        <div
+          ref={(node) => { this.buffer = node; }}
+          style={{
+            visibility: 'hidden', position: 'absolute', top: 0, left: 0
+          }}
         >
         </div>
       </div>
