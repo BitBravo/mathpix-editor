@@ -1,67 +1,109 @@
-/*
- * FeaturePage
- *
- * List all the features
- */
 import React from 'react';
+// import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
+// import decode from 'decode-html';
+import Preview from 'components/Preview';
+import CodeMirror from 'react-codemirror';
+import hljs from 'highlight.js';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/mode/markdown/markdown';
+import 'codemirror/mode/xml/xml';
 import './style.scss';
 
-export default class FeaturePage extends React.Component {
-  // eslint-disable-line react/prefer-stateless-function
+const md = require('markdown-it')({
+  html: true,
+  xhtmlOut: false,
+  breaks: true,
+  langPrefix: 'language-',
+  linkify: false,
+  typographer: true,
+  quotes: '“”‘’',
+  highlight(str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value;
+      } catch (__) {} // eslint-disable-line
+    }
 
-  // Since state and props are static,
-  // there's no need to re-render this component
-  shouldComponentUpdate() {
-    return false;
+    return '';
+  }
+})
+  .use(require('markdown-it-footnote'))
+  .use(require('markdown-it-sub'))
+  .use(require('markdown-it-sup'))
+  .use(require('markdown-it-deflist'))
+  .use(require('markdown-it-mark'))
+  .use(require('markdown-it-highlightjs'), { auto: true, code: true })
+  .use(require('markdown-it-emoji'))
+  .use(require('markdown-it-ins'));
+  // .use(
+  //   require('markdown-it-incremental-dom'),
+  //   IncrementalDOM,
+  //   // {
+  //   //   incrementalizeDefaultRules: true,
+  //   // }
+  // );
+
+const math = String.raw`
+  # Mathematics
+
+  When $a \ne 0$, there are two solutions to \(ax^2 + bx + c = 0\) and they are
+  $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+
+  $$
+  f ( a ) = \frac { 1 } { 2 \pi i } \oint _ { \gamma } \frac { f ( z ) } { z - a } d z
+  $$
+
+  $$\lim_{x \to \infty} \exp(-x) = 0$$
+  `;
+
+export default class HomePage extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      markdownSrc: math,
+    };
+
+    this.handleMarkdownChange = this.handleMarkdownChange.bind(this);
+    this.updateCode = this.updateCode.bind(this);
+  }
+
+  componentDidMount() {
+  }
+
+  handleMarkdownChange(evt) {
+    this.setState({ markdownSrc: evt.target.value });
+  }
+
+  updateCode(newCode) {
+    this.setState({
+      markdownSrc: newCode,
+    });
   }
 
   render() {
+    const result = md.parse(this.state.markdownSrc, {});
+    // const result = md.render(this.state.markdownSrc);
+    const options = {
+      lineNumbers: true,
+      mode: 'markdown',
+      lineWrapping: true,
+    };
+
     return (
-      <div className="feature-page">
+      <article>
         <Helmet>
-          <title>Feature Page</title>
-          <meta
-            name="description"
-            content="Feature page of React.js Boilerplate application"
-          />
+          <title>React Markdown</title>
+          <meta name="description" content="React Markdown" />
         </Helmet>
-        <h1>Features</h1>
-        <ul>
-          <li>
-            <p className="title">Next generation JavaScript</p>
-            <p>
-              Use template strings, object destructuring, arrow functions, JSX
-              syntax and more, today.
-            </p>
-          </li>
-          <li>
-            <p className="title">Instant feedback</p>
-            <p>
-              Enjoy the best DX and code your app at the speed of thought! Your
-              saved changes to the CSS and JS are reflected instantaneously
-              without refreshing the page. Preserve application state even when
-              you update something in the underlying code!
-            </p>
-          </li>
-          <li>
-            <p className="title">Industry-standard routing</p>
-            <p>
-              {
-                "Write composable CSS that's co-located with your components for complete modularity. Unique generated class names keep the specificity low while eliminating style clashes. Ship only the styles that are on the page for the best performance."
-              }
-            </p>
-          </li>
-          <li>
-            <p className="title">The Best Test Setup</p>
-            <p>
-              Automatically guarantee code quality and non-breaking changes.
-              (Seen a react app with 99% test coverage before?)
-            </p>
-          </li>
-        </ul>
-        <i>and much more...</i>
-      </div>
+        <div>
+          <CodeMirror className="editor-pane" value={this.state.markdownSrc} onChange={this.updateCode} options={options} />
+          <div className="result-pane">
+            <Preview nodes={result} />
+          </div>
+        </div>
+      </article>
     );
   }
 }
+

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { shallow, mount } from 'enzyme';  // eslint-disable-line
 
 import HomePage from '../HomePage';
 import { mapDispatchToProps } from '../index';

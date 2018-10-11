@@ -1,30 +1,32 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import loadScript from 'load-script';
+import Parser from 'html-react-parser';
+import IncrementalDOM from 'incremental-dom';
 import './style.scss';
 
 const SCRIPT = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_HTMLorMML';
-
 export default class Preview extends Component {
   static propTypes = {
-    className: PropTypes.string,
-    style: PropTypes.string,
-    math: PropTypes.string,
+    nodes: PropTypes.array,
   }
 
   static defaultProps = {
-    math: ''
+    nodes: ''
   }
 
   constructor(props) {
     super(props);
-    this.delay = 500;
+    this.delay = 0;
     this.timeout = null;
     this.mjRunning = false;
     this.mjPending = false;
     this.oldText = null;
     this.state = {
       loaded: false,
+      math: '',
+      buffer: '',
+      hasError: false,
     };
 
     this.onLoad = this.onLoad.bind(this);
@@ -35,7 +37,16 @@ export default class Preview extends Component {
   }
 
   componentWillReceiveProps() {
-    this.Update();
+    this.onLoad();
+  }
+
+  shouldComponentUpdate(newProps, oldProps) {
+    return newProps.nodes !== oldProps.nodes;
+  }
+
+  componentDidCatch(error, info) {
+    this.setState({ hasError: true });
+    logErrorToMyService(error, info);
   }
 
   onLoad = (err) => {
@@ -47,12 +58,12 @@ export default class Preview extends Component {
         TeX: {
           Macros: {
             Macros: {
-              longdiv: ['{\\overline{\\smash{)}#1}}', 1],
-              oint: String.raw`{\\mathop{\\vcenter{\\mathchoice{\\huge\\unicode{x222E}\\,}{\\unicode{x222E}}{\\unicode{x222E}}{\\unicode{x222E}}}\\,}\\nolimits}`,
-              oiint: String.raw`{\\mathop{\\vcenter{\\mathchoice{\\huge\\unicode{x222F}\\,}{\\unicode{x222F}}{\\unicode{x222F}}{\\unicode{x222F}}}\\,}\\nolimits}`,
-              oiiint: String.raw`{\\mathop{\\vcenter{\\mathchoice{\\huge\\unicode{x2230}\\,}{\\unicode{x2230}}{\\unicode{x2230}}{\\unicode{x2230}}}\\,}\\nolimits}`,
-              ointclockwise: String.raw`{\\mathop{\\vcenter{\\mathchoice{\\huge\\unicode{x2232}\\,}{\\unicode{x2232}}{\\unicode{x2232}}{\\unicode{x2232}}}\\,}\\nolimits}`,
-              ointctrclockwise: String.raw`{\\mathop{\\vcenter{\\mathchoice{\\huge\\unicode{x2233}\\,}{\\unicode{x2233}}{\\unicode{x2233}}{\\unicode{x2233}}}\\,}\\nolimits}`
+              longdiv: ['{\overline{\\smash{)}#1}}', 1],
+              oint: String.raw`{\mathop{\vcenter{\mathchoice{\huge\\unicode{x222E}\,}{\\unicode{x222E}}{\\unicode{x222E}}{\\unicode{x222E}}}\,}\nolimits}`,
+              oiint: String.raw`{\mathop{\vcenter{\mathchoice{\huge\/unicode{x222F}\,}{\/unicode{x222F}}{\/unicode{x222F}}{\/unicode{x222F}}}\,}\nolimits}`,
+              oiiint: String.raw`{\mathop{\vcenter{\mathchoice{\huge\/unicode{x2230}\,}{\/unicode{x2230}}{\/unicode{x2230}}{\/unicode{x2230}}}\,}\nolimits}`,
+              ointclockwise: String.raw`{\mathop{\vcenter{\mathchoice{\huge\/unicode{x2232}\,}{\/unicode{x2232}}{\/unicode{x2232}}{\/unicode{x2232}}}\,}\nolimits}`,
+              ointctrclockwise: String.raw`{\mathop{\vcenter{\mathchoice{\huge\/unicode{x2233}\,}{\/unicode{x2233}}{\/unicode{x2233}}{\/unicode{x2233}}}\,}\nolimits}`
             }
           }
         }
@@ -62,13 +73,29 @@ export default class Preview extends Component {
     }
   }
 
-  SwapBuffers() {
-    const buffer = this.preview;
+  EquationNumber = () => {
+    const elements = document.querySelectorAll('.react-mathjax-preview p .mjx-chtml.MJXc-display');
+    elements.forEach((element, index) => {
+      const data = document.querySelectorAll('.react-mathjax-preview p .mjx-chtml.MJXc-display')[index].innerHTML;
+      if (!data.includes('lineNumber')) {
+        const newElement = document.createElement('span');
+        newElement.className = 'lineNumber';
+        newElement.style = 'margin-left:40px;';
+        const node = document.createTextNode(`(${index + 1})`);
+        newElement.appendChild(node);
+        elements[index].appendChild(newElement);
+      } else {
+        // const textnode = document.createTextNode(`(${index + 1})`);
+        // const item = elements[index].childNodes[0];
+        // item.replaceChild(textnode, item.childNodes[1]);
+      }
+    });
+  }
+
+  SwapBuffers = () => {
+    this.EquationNumber();
     const preview = this.buffer;
-    this.buffer = buffer.innerHTML;
-    this.preview.innerHTML = preview.innerHTML;
-    // buffer.style.visibility = "hidden"; buffer.style.position = "absolute";
-    // preview.style.position = ""; preview.style.visibility = "";
+    this.setState({ math: preview.innerHTML });
   }
 
   Update() {
@@ -79,16 +106,35 @@ export default class Preview extends Component {
     }, this.delay);
   }
 
+  renderNodes = (nodes) => {
+    nodes.map((node) => {
+      if (node.tag) {
+        if (node.nesting === 1) {
+          IncrementalDOM.elementOpen(node.tag);
+        } else if (node.nesting === -1) {
+          IncrementalDOM.elementClose(node.tag);
+        }
+      }
+      if (node.type === 'text') {
+        IncrementalDOM.text(node.content);
+      }
+      if (node.children && node.children.length) {
+        this.renderNodes(node.children);
+      }
+    });
+  }
+
   CreatePreview() {
     this.timeout = null;
     if (this.mjPending) return;
-    const text = this.props.math;
+    const text = this.props.nodes;
     if (text === this.oldtext) return;
     if (this.mjRunning) {
       this.mjPending = true;
       MathJax.Hub.Queue(['CreatePreview', this]); //eslint-disable-line
     } else {
-      this.buffer.innerHTML = text;
+      IncrementalDOM.patch(this.buffer, () => this.renderNodes(text));
+      // this.buffer.innerHTML = text;
       this.oldtext = text;
       this.mjRunning = true;
       MathJax.Hub.Queue( //eslint-disable-line
@@ -109,11 +155,9 @@ export default class Preview extends Component {
     return (
       <div>
         <div
-          className={this.props.className}
-          id="react-mathjax-preview"
-          style={this.props.style}
-          ref={(node) => { this.preview = node; }}
+          className="react-mathjax-preview"
         >
+          {Parser(this.state.math)}
         </div>
         <div
           ref={(node) => { this.buffer = node; }}
@@ -126,4 +170,3 @@ export default class Preview extends Component {
     );
   }
 }
-
