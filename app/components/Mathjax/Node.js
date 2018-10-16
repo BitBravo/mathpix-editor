@@ -133,6 +133,7 @@ class NodeWithMathJax extends React.Component<*, *> {
     }
 }
 
+// eslint-disable-next-line
 class MathJaxNode extends React.PureComponent<*, *> {
   render() {
     console.log(this.props);

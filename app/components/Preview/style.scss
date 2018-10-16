@@ -1,20 +1,10 @@
-preview {
-  display: flex;
-  justify-content: space-between;
-  padding: 3em 0;
-
-  a {
-    color: #41addd;
-
-    &:hover {
-      color: #6cc0e5;
-    }
-  }
-}
-
-  #react-mathjax-preview {
+  .react-mathjax-preview {
     overflow-wrap: break-word;
   }
-  .hide{
-    display: none !important;
+
+  .equation-number{
+    padding-left: 30px;
+  }
+  .math-block{
+    text-align: center;
   }
