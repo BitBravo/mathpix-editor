@@ -81,6 +81,9 @@ export default class HomePage extends React.PureComponent {
       lineNumbers: true,
       mode: 'markdown',
       lineWrapping: true,
+      extraKeys: {
+        Enter: (cm) => cm.replaceSelection('\n')
+      },
     };
 
     return (
