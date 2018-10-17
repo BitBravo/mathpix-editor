@@ -35,7 +35,7 @@ const md = require('markdown-it')({
   .use(require('markdown-it-highlightjs'), { auto: true, code: true })
   .use(require('markdown-it-emoji'))
   .use(require('markdown-it-ins'))
-  .use(require('libs/mathParse'));
+  .use(require('libs/mathParse')());
 
 const math = String.raw`
   # Mathematics
@@ -45,6 +45,9 @@ const math = String.raw`
   f ( a ) = \frac { 1 } { 2 \pi i } \oint _ { \gamma } \frac { f ( z ) } { z - a } d z
   $$
   $$ \lim_{x \to \infty} \exp(-x) = 0 $$
+  \begin{equation}
+  it's ok
+  \end{equation}
   `;
 
 export default class HomePage extends React.PureComponent {
