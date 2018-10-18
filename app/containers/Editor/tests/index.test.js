@@ -5,7 +5,7 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';  // eslint-disable-line
 
-import HomePage from '../HomePage';
+import Editor from '../Editor';
 import { mapDispatchToProps } from '../index';
 import { changeUsername } from '../actions';
 import { loadRepos } from '../../App/actions';
@@ -14,7 +14,7 @@ describe('<HomePage />', () => {
   it('should render fetch the repos on mount if a username exists', () => {
     const submitSpy = jest.fn();
     mount(
-      <HomePage
+      <Editor
         username="Not Empty"
         onChangeUsername={() => {}}
         onSubmitForm={submitSpy}
@@ -25,14 +25,14 @@ describe('<HomePage />', () => {
 
   it('should not call onSubmitForm if username is an empty string', () => {
     const submitSpy = jest.fn();
-    mount(<HomePage onChangeUsername={() => {}} onSubmitForm={submitSpy} />);
+    mount(<Editor onChangeUsername={() => {}} onSubmitForm={submitSpy} />);
     expect(submitSpy).not.toHaveBeenCalled();
   });
 
   it('should not call onSubmitForm if username is null', () => {
     const submitSpy = jest.fn();
     mount(
-      <HomePage
+      <Editor
         username=""
         onChangeUsername={() => {}}
         onSubmitForm={submitSpy}

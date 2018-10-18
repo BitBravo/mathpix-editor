@@ -10,7 +10,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Switch, Route } from 'react-router-dom';
 
-import HomePage from 'containers/HomePage/Loadable';
+import Editor from 'containers/Editor/Loadable';
 import FeaturePage from 'containers/FeaturePage/Loadable';
 import NotFoundPage from 'containers/NotFoundPage/Loadable';
 import Header from 'components/Header';
@@ -27,7 +27,7 @@ const App = () => (
     </Helmet>
     <Header />
     <Switch>
-      <Route exact path="/" component={HomePage} />
+      <Route exact path="/" component={Editor} />
       <Route path="/test" component={FeaturePage} />
       <Route path="" component={NotFoundPage} />
     </Switch>

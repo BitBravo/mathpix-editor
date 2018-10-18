@@ -9,9 +9,9 @@ import {
 } from 'containers/App/selectors';
 
 import reducer from './reducer';
-import HomePage from './HomePage';
+import Editor from './Editor';
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch) => ({ // eslint-disable-line
 });
 
 const mapStateToProps = createStructuredSelector({
@@ -23,5 +23,5 @@ const withConnect = connect(mapStateToProps, mapDispatchToProps);
 
 const withReducer = injectReducer({ key: 'home', reducer });
 
-export default compose(withReducer, withConnect)(HomePage);
+export default compose(withReducer, withConnect)(Editor);
 export { mapDispatchToProps };

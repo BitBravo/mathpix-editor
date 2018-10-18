@@ -2,40 +2,10 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import Preview from 'components/Preview';
 import CodeMirror from 'react-codemirror';
-import hljs from 'highlight.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/xml/xml';
 import './style.scss';
-
-
-const md = require('markdown-it')({
-  html: true,
-  xhtmlOut: false,
-  breaks: true,
-  langPrefix: 'language-',
-  linkify: false,
-  typographer: true,
-  quotes: '“”‘’',
-  highlight(str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(lang, str).value;
-      } catch (__) {} // eslint-disable-line
-    }
-
-    return '';
-  }
-})
-  .use(require('markdown-it-footnote'))
-  .use(require('markdown-it-sub'))
-  .use(require('markdown-it-sup'))
-  .use(require('markdown-it-deflist'))
-  .use(require('markdown-it-mark'))
-  .use(require('markdown-it-highlightjs'), { auto: true, code: true })
-  .use(require('markdown-it-emoji'))
-  .use(require('markdown-it-ins'))
-  .use(require('libs/mathParse')());
 
 const math = String.raw`
   # Mathematics
@@ -50,7 +20,7 @@ const math = String.raw`
   \end{equation}
   `;
 
-export default class HomePage extends React.PureComponent {
+export default class Editor extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -68,19 +38,18 @@ export default class HomePage extends React.PureComponent {
     this.setState({ markdownSrc: evt.target.value });
   }
 
-  updateCode(newCode) {
+  updateCode(code) {
     this.setState({
-      markdownSrc: newCode,
+      markdownSrc: code,
     });
   }
 
   render() {
-    const result = md.render(this.state.markdownSrc, 0);
-
     const options = {
       lineNumbers: true,
       mode: 'markdown',
       lineWrapping: true,
+      autoRefresh: true,
       extraKeys: {
         Enter: (cm) => cm.replaceSelection('\n')
       },
@@ -95,7 +64,7 @@ export default class HomePage extends React.PureComponent {
         <div>
           <CodeMirror className="editor-pane" value={this.state.markdownSrc} onChange={this.updateCode} options={options} />
           <div className="result-pane">
-            <Preview nodes={result} />
+            <Preview math={this.state.markdownSrc} />
           </div>
         </div>
       </article>
