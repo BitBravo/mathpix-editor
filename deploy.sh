@@ -1,4 +1,3 @@
 #!/bin/bash
-rm -rf editor.zip
-zip editor.zip -r * .[^.]*  -x "node_modules**" "*.zip" ".git**"
-eb deploy --timeout 50
+npm run build
+aws s3 sync build s3://editor.mathpix.com --delete
