@@ -1,7 +1,9 @@
 
 require('../mathjax');
 
-let count = 0;
+
+let count = 0,
+  mathNumber = [];
 (function (root, factory) {
   if (typeof exports === 'object') {
     module.exports = factory();
@@ -10,12 +12,12 @@ let count = 0;
   }
 }(this, () => {
   function multiMath(state, silent) {
-    count = 1;
+    count = 0;
     let startMathPos = state.pos;
     if (state.src.charCodeAt(startMathPos) !== 0x5C /* \ */) {
       return false;
     }
-    const match = state.src.slice(++startMathPos).match(/^(?:\\\[|\\\(|begin\{([^}]*)\})/); // eslint-disable-line
+    const match = state.src.slice(++startMathPos).match(/^(?:\\\[|\\\(|begin\{([^}]*)\}|eqref\{([^}]*)\})/); // eslint-disable-line
     if (!match) {
       return false;
     }
@@ -27,6 +29,9 @@ let count = 0;
     } else if (match[0] === '\\(') {
       type = 'inline_math';
       endMarker = '\\\\)';
+    } else if (match[0].includes('eqref')) {
+      type = 'reference_note';
+      endMarker = '';
     } else if (match[1]) {
       type = 'equation_math';
       endMarker = `\\end{${match[1]}}`;
@@ -39,9 +44,13 @@ let count = 0;
     const nextPos = endMarkerPos + endMarker.length;
     if (!silent) {
       const token = state.push(type, '', 0);
-      token.content = includeMarkers
-        ? state.src.slice(state.pos, nextPos)
-        : state.src.slice(startMathPos, endMarkerPos);
+      if (includeMarkers) {
+        token.content = state.src.slice(state.pos, nextPos);
+      } else if (type === 'reference_note') {
+        token.content = match ? match[2] : '';
+      } else {
+        token.content = state.src.slice(startMathPos, endMarkerPos);
+      }
     }
     state.pos = nextPos;
     return true;
@@ -96,9 +105,9 @@ let count = 0;
     return true;
   }
 
-  function escapeHtml(html) {
-    return html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\u00a0/g, ' ');
-  }
+  // function escapeHtml(html) {
+  //   return html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\u00a0/g, ' ');
+  // }
 
   function extend(options, defaults) {
     return Object.keys(defaults).reduce((result, key) => {
@@ -113,16 +122,30 @@ let count = 0;
     math: 'Math',
     inline_math: 'InlineMath',
     display_math: 'DisplayMath',
-    equation_math: 'EquationMath'
+    equation_math: 'EquationMath',
+    reference_note: 'Reference_note'
   };
 
-  const renderMath = function (token) {
-    const mathEquation = MathJax.Typeset(token.content, true).outerHTML; // eslint-disable-line
-    const equationNode = token.type === 'equation_math' ? `<span class='equation-number'>(${count++})</span>` : ''; // eslint-disable-line
+  const checkReference = (data) => {
+    const match = data.match(/label\{([^}]*)\}/);
+    return { tagId: match ? match[1] : '', math: data.replace(/\\label\{([^}]*)\}/, '') };
+  };
+
+  const renderMath = (a, token) => {
+    const { tagId, math } = checkReference(token.content);
+    const mathEquation = MathJax.Typeset(math, true).outerHTML; // eslint-disable-line
+    const equationNode = token.type === 'equation_math' ? `<span class='equation-number' ${tagId ? `id="${tagId}"` : ''}>(${++count})</span>` : ''; // eslint-disable-line
+    if (tagId) {
+      mathNumber[tagId] = count;
+    }
     return token.type === 'inline_math' ? `<span className="math-block">${mathEquation}</span>` : `<p className="math-block">${mathEquation}${equationNode}</p>`;
   };
 
-  return function (options) {
+  const renderReference = (token) => {
+    return `<span className="clickable-link" value=${token.content}>${mathNumber[token.content] || token.content}</span>`;
+  };
+
+  return (options) => {
     const defaults = {
       beforeMath: '',
       afterMath: '',
@@ -133,14 +156,15 @@ let count = 0;
     };
     options = extend(options || {}, defaults);
 
-    return function (md) {
+    return (md) => {
       md.inline.ruler.before('escape', 'multiMath', multiMath);
       md.inline.ruler.push('simpleMath', simpleMath);
 
       Object.keys(mapping).forEach((key) => {
-        md.renderer.rules[key] = function (tokens, idx) {
-          return renderMath(tokens[idx]);
-        };
+        md.renderer.rules[key] = (tokens, idx) => (
+          tokens[idx].type === 'reference_note' ?
+            renderReference(tokens[idx])
+            : renderMath(tokens, tokens[idx]));
       });
     };
   };
