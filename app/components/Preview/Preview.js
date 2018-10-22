@@ -16,7 +16,7 @@ const md = require('markdown-it')({
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(lang, str).value;
-      } catch (__) {} // eslint-disable-line
+      } catch (__) { } // eslint-disable-line
     }
 
     return '';
@@ -43,7 +43,7 @@ export default class Preview extends Component {
 
   constructor(props) {
     super(props);
-    this.delay = 350;
+    this.delay = 1000;
     this.timeout = null;
     this.state = {
       loaded: false,  // eslint-disable-line
@@ -52,9 +52,14 @@ export default class Preview extends Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.Update();
   }
+
+  componentDidMount() {
+    window.addEventListener('click', this.handleClick, false);
+  }
+
 
   componentWillReceiveProps() {
     this.Update();
@@ -72,6 +77,10 @@ export default class Preview extends Component {
     logErrorToMyService(error, info);
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('click', this.handleClick, false);
+  }
+
   mathConverter() {
     this.timeout = null;
     const data = md.render(this.props.math);
@@ -82,10 +91,18 @@ export default class Preview extends Component {
     const self = this;
     if (!this.timeout) {
       this.timeout = setTimeout(() => {
+        md.render(this.props.math);
         self.mathConverter(self);
       }, this.delay);
     }
   }
+  handleClick = (e) => {
+    const domNode = e.target.attributes;
+    if (domNode[0].value === 'clickable-link') {
+      const domID = domNode[1].value;
+      document.getElementById(domID).scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   render() {
     return (
