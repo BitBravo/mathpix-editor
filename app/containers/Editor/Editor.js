@@ -7,27 +7,74 @@ import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/xml/xml';
 import './style.scss';
 
-const math = String.raw`# Mathematic editing made simple
-When $a \ne 0$, there are two solutions to $(ax^2 + bx + c = 0)$ and they are
-$$ x = {-b + \sqrt{b^2-4ac} \over 2a}. $$ and
-$$ x = {-b - \sqrt{b^2-4ac} \over 2a}. $$
-Numbered equations can be represented using:` + "\n```\\begin{equation} ... \\end{equation}```\n" + String.raw`
-For example, here are some important equations in statistics:
+const math = String.raw`
+In equation \eqref{eq:7}, we find the value of an
+interesting integral:
+
 \begin{equation}
-f ( x | \mu , \sigma ^ { 2 } ) = \frac { 1 } { \sigma } \varphi \left( \frac { x - \mu } { \sigma } \right)
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:sample}
 \end{equation}
 
-\begin{equation}
-F ( x ) = \Phi \left( \frac { x - \mu } { \sigma } \right) = \frac { 1 } { 2 } \left[ 1 + \operatorname { erf } \left( \frac { x - \mu } { \sigma \sqrt { 2 } } \right) \right] \end{equation}
+In equation \eqref{eq:2}, we find the value of an
+interesting integral:
 
 \begin{equation}
-\varphi ( x ) = \frac { 1 } { \sqrt { 2 \pi } } e ^ { - \frac { 1 } { 2 } x ^ { 2 } }
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:2}
+\end{equation}
+  
+In equation \eqref{eq:3}, we find the value of an
+interesting integral:
+
+\begin{equation}
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:3}
+\end{equation}
+  
+In equation \eqref{eq:4}, we find the value of an
+interesting integral:
+
+\begin{equation}
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:4}
+\end{equation}
+  
+In equation \eqref{eq:5}, we find the value of an
+interesting integral:
+
+\begin{equation}
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:5}
 \end{equation}
 
-You can even insert raw HTML:
 
-<img text-align="center" width="800px" src="https://i.ytimg.com/vi/xgQhefFOXrM/maxresdefault.jpg" />
-`
+
+\begin{equation}
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:8}
+\end{equation}
+
+In equation \eqref{eq:8}, we find the value of an
+interesting integral:
+
+\begin{equation}
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:6}
+\end{equation}
+
+In equation \eqref{eq:6}, we find the value of an
+interesting integral:
+
+\begin{equation}
+  \int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}
+  \label{eq:7}
+\end{equation}
+
+In equation \eqref{eq:sample}, we find the value of an
+interesting integral:
+
+  `;
 
 export default class Editor extends React.PureComponent {
   constructor(props) {
