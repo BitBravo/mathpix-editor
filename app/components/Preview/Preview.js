@@ -98,7 +98,7 @@ export default class Preview extends Component {
   }
   handleClick = (e) => {
     const domNode = e.target.attributes;
-    if (domNode[0].value === 'clickable-link') {
+    if (domNode.length > 0 && domNode[0].value === 'clickable-link') {
       const domID = domNode[1].value;
       document.getElementById(domID).scrollIntoView({ behavior: 'smooth' });
     }
