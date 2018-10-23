@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Parser from 'html-react-parser';
 import hljs from 'highlight.js';
@@ -58,6 +59,10 @@ export default class Preview extends Component {
 
   componentDidMount() {
     window.addEventListener('click', this.handleClick, false);
+    // const node = ReactDOM.findDOMNode(this);
+    // console.log(node)
+    // const mainElement = node.querySelector('main');
+    // mainElement.addEventListener('scroll', this.onScroll);
   }
 
 
@@ -96,6 +101,7 @@ export default class Preview extends Component {
       }, this.delay);
     }
   }
+
   handleClick = (e) => {
     const domNode = e.target.attributes;
     if (domNode.length > 1 && domNode[1].value === 'clickable-link') {
@@ -104,10 +110,14 @@ export default class Preview extends Component {
     }
   };
 
+  scrollSync = (point) => {
+    this.preview.scrollTop = point.top;
+  }
+
   render() {
     return (
       <div
-        className="react-mathjax-preview"
+        className="react-mathjax-preview result-pane"
         ref={(node) => { this.preview = node; }}
       >
         {Parser(this.state.math)}

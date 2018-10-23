@@ -350,6 +350,7 @@ export default class Editor extends React.PureComponent {
 
     this.handleMarkdownChange = this.handleMarkdownChange.bind(this);
     this.updateCode = this.updateCode.bind(this);
+    // this.scrollEvent = this.scrollEvent.bind(this);
   }
 
   componentDidMount() {
@@ -363,6 +364,10 @@ export default class Editor extends React.PureComponent {
     this.setState({
       markdownSrc: code,
     });
+  }
+
+  scrollEvent(nodes) {
+    this.preview.scrollSync(nodes);
   }
 
   render() {
@@ -383,10 +388,8 @@ export default class Editor extends React.PureComponent {
           <meta name="description" content="React Markdown" />
         </Helmet>
         <div>
-          <CodeMirror className="editor-pane" value={this.state.markdownSrc} onChange={this.updateCode} options={options} />
-          <div className="result-pane">
-            <Preview math={this.state.markdownSrc} />
-          </div>
+          <CodeMirror className="editor-pane" value={this.state.markdownSrc} onChange={this.updateCode} onScroll={(nodes) => { this.preview.scrollSync(nodes); }} options={options} />
+          <Preview math={this.state.markdownSrc} ref={(ref) => (this.preview = ref)} />
         </div>
       </article>
     );
