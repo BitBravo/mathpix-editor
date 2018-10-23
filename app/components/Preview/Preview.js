@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Parser from 'html-react-parser';
 import hljs from 'highlight.js';
