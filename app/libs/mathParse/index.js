@@ -136,7 +136,7 @@ let count = 0,
     const mathEquation = MathJax.Typeset(math, true).outerHTML; // eslint-disable-line
     const equationNode = token.type === 'equation_math' ? `<span class='equation-number' ${tagId ? `id="${tagId}"` : ''}>(${++count})</span>` : ''; // eslint-disable-line
     if (tagId) {
-      mathNumber[tagId] = count;
+      mathNumber[tagId] = `(${count})`;
     }
     return token.type === 'inline_math' ? `<span className="math-block">${mathEquation}</span>` : `<p className="math-block">${mathEquation}${equationNode}</p>`;
   };
