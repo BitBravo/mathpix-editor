@@ -136,13 +136,13 @@ let count = 0,
     const mathEquation = MathJax.Typeset(math, true).outerHTML; // eslint-disable-line
     const equationNode = token.type === 'equation_math' ? `<span class='equation-number' ${tagId ? `id="${tagId}"` : ''}>(${++count})</span>` : ''; // eslint-disable-line
     if (tagId) {
-      mathNumber[tagId] = `(${count})`;
+      mathNumber[tagId] = `[${count}]`;
     }
     return token.type === 'inline_math' ? `<span className="math-block">${mathEquation}</span>` : `<p className="math-block">${mathEquation}${equationNode}</p>`;
   };
 
   const renderReference = (token) => {
-    return `<span className="clickable-link" value=${token.content}>${mathNumber[token.content] || token.content}</span>`;
+    return `<a href="javascript:void(0)" style="cursor: pointer; text-decoration: none;" className="clickable-link" value=${token.content}>${mathNumber[token.content] || token.content} </a>`;
   };
 
   return (options) => {
