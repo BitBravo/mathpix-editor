@@ -106,13 +106,11 @@ export default class Preview extends Component {
 
   render() {
     return (
-      <div>
-        <div
-          className="react-mathjax-preview"
-          ref={(node) => { this.preview = node; }}
-        >
-          {Parser(this.state.math)}
-        </div>
+      <div
+        className="react-mathjax-preview"
+        ref={(node) => { this.preview = node; }}
+      >
+        {Parser(this.state.math)}
       </div>
     );
   }
