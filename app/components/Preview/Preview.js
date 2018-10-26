@@ -94,10 +94,13 @@ export default class Preview extends Component {
   componentWillUnmount() {
     window.removeEventListener('click', this.handleClick, false);
     this.preview.removeEventListener('scroll', this.handleScroll);
-    this.preview.removeEventListener('mouseenter', this.focus1);
+    this.preview.removeEventListener('mouseenter', this.focus);
     this.preview.removeEventListener('mouseleave', this.focus);
   }
 
+  focus = (e) => {
+    console.log(e);
+  }
   mathConverter() {
     this.timeout = null;
     const data = md.render(this.props.math);
