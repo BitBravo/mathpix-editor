@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Parser from 'html-react-parser';
+import ReactDOM from 'react-dom';
 import hljs from 'highlight.js';
 import './style.scss';
 
@@ -30,11 +31,14 @@ const md = require('markdown-it')({
   .use(require('markdown-it-highlightjs'), { auto: true, code: true })
   .use(require('markdown-it-emoji'))
   .use(require('markdown-it-ins'))
-  .use(require('libs/mathParse')());
+  .use(require('libs/mathParse')())
+  .use(require('libs/lineNumber'));
 
 export default class Preview extends Component {
   static propTypes = {
     math: PropTypes.string,
+    scrollhandler: PropTypes.func,
+    focusControl: PropTypes.func
   }
 
   static defaultProps = {
@@ -45,6 +49,7 @@ export default class Preview extends Component {
     super(props);
     this.delay = 1000;
     this.timeout = null;
+    this.previewActiveFlag = false;
     this.state = {
       loaded: false,  // eslint-disable-line
       hasError: false, // eslint-disable-line
@@ -58,10 +63,15 @@ export default class Preview extends Component {
 
   componentDidMount() {
     window.addEventListener('click', this.handleClick, false);
-    // const node = ReactDOM.findDOMNode(this);
-    // console.log(node)
-    // const mainElement = node.querySelector('main');
-    // mainElement.addEventListener('scroll', this.onScroll);
+    this.preview.addEventListener('scroll', this.handleScroll);
+    this.preview.addEventListener('mouseenter', () => {
+      this.previewActiveFlag = true;
+      this.props.focusControl(true);
+    });
+    this.preview.addEventListener('mouseleave', () => {
+      this.previewActiveFlag = false;
+      this.props.focusControl(false);
+    });
   }
 
 
@@ -83,6 +93,9 @@ export default class Preview extends Component {
 
   componentWillUnmount() {
     window.removeEventListener('click', this.handleClick, false);
+    this.preview.removeEventListener('scroll', this.handleScroll);
+    this.preview.removeEventListener('mouseenter', this.focus1);
+    this.preview.removeEventListener('mouseleave', this.focus);
   }
 
   mathConverter() {
@@ -110,7 +123,25 @@ export default class Preview extends Component {
   };
 
   scrollSync = (point) => {
-    this.preview.scrollTop = point.top;
+    const className = `line${point.lineNumber}`;
+    const child = document.querySelector(`.${className}`);
+    this.preview.scrollTop = (child.offsetTop - point.offset);
+  }
+
+  handleScroll = (e) => {
+    if (!this.previewActiveFlag) return;
+    const elements = document.querySelectorAll('.line-block');
+    let lineNumber = 0;
+    let offset = 0;
+    const scrTop = e.srcElement.scrollTop;
+    for (let i = 0; i < elements.length; i += 1) {
+      offset = elements[i].offsetTop;
+      if (offset > scrTop) {
+        lineNumber = elements[i].attributes['data-line'].value;
+        this.props.scrollhandler(lineNumber, (offset - scrTop));
+        return;
+      }
+    }
   }
 
   render() {

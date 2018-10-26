@@ -344,16 +344,23 @@ ok, Great.
 export default class Editor extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.lineNumber = 0;
+    this.editorActiveFlag = true;
     this.state = {
       markdownSrc: math,
     };
 
     this.handleMarkdownChange = this.handleMarkdownChange.bind(this);
     this.updateCode = this.updateCode.bind(this);
-    // this.scrollEvent = this.scrollEvent.bind(this);
+    this.scrollEvent = this.scrollEvent.bind(this);
   }
 
   componentDidMount() {
+  }
+
+  focusControl = (e) => {
+    if (e) this.editorActiveFlag = false;
+    else this.editorActiveFlag = true;
   }
 
   handleMarkdownChange(evt) {
@@ -366,8 +373,34 @@ export default class Editor extends React.PureComponent {
     });
   }
 
-  scrollEvent(nodes) {
-    this.preview.scrollSync(nodes);
+  scrollEvent = () => {
+    if (!this.editorActiveFlag) return;
+    let offset = 0;
+    const reg = /(?:<h|<p>|<li>|<ol>|<div>|<blockquote>|# )/g;
+    let newLineNumber = this.editor.codeMirror.lineAtHeight(0);
+
+    if (this.lineNumber === newLineNumber) {
+      return;
+    }
+
+    this.lineNumber = newLineNumber;
+    const doc = this.editor.codeMirror.getDoc();
+    let line = doc.getLine(newLineNumber);
+    try {
+      while (line.match(reg) === null) {
+        newLineNumber += 1;
+        line = doc.getLine(newLineNumber);
+        offset += 24;
+      }
+      this.preview.scrollSync({ lineNumber: newLineNumber, offset });
+    } catch (ex) {}
+  }
+
+  scrollhandler = (lineNumber, offset) => {
+    const data = offset;
+    const line = parseInt(lineNumber, 10);
+    const scrollTop = this.editor.codeMirror.heightAtLine(line, 'local') - data;
+    document.querySelector('.CodeMirror-scroll').scrollTop = scrollTop;
   }
 
   render() {
@@ -388,8 +421,8 @@ export default class Editor extends React.PureComponent {
           <meta name="description" content="React Markdown" />
         </Helmet>
         <div>
-          <CodeMirror className="editor-pane" value={this.state.markdownSrc} onChange={this.updateCode} onScroll={(nodes) => { this.preview.scrollSync(nodes); }} options={options} />
-          <Preview math={this.state.markdownSrc} ref={(ref) => (this.preview = ref)} />
+          <CodeMirror className="editor-pane" value={this.state.markdownSrc} ref={(editor) => (this.editor = editor)} onChange={this.updateCode} onScroll={this.scrollEvent} options={options} />
+          <Preview math={this.state.markdownSrc} ref={(ref) => (this.preview = ref)} scrollhandler={this.scrollhandler} focusControl={this.focusControl} />
         </div>
       </article>
     );
