@@ -10,8 +10,6 @@ import './style.scss';
 const math = String.raw`
 ## Mathematics
 
-<blockquote>
-
 ### Simple inline, block mathematics formulas.
 
 Input your mathematics formula inline like: $\vec{F} \ =\ m\vec{a}$ and \\(ax^2 + bx + c = 0 \\) or new line mathematics formulas like this:
@@ -38,8 +36,8 @@ $$
 ### Brackets
 
 \\[
-  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } , 
-  [ \vec { F } = m \vec { a } ] , 
+  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } ,
+  [ \vec { F } = m \vec { a } ] ,
   \left| \frac { a } { b } \right| \left\| \frac { a } { b } \right\| \left\langle \frac { a } { b } \right\rangle \{ \sqrt { a + \sqrt { a + \sqrt { a } } } \rightarrow \infty \}
 \\]
 
@@ -105,12 +103,10 @@ Look at the Equation \eqref{eq:2}.
 
 Please use Equation \eqref{eq:last} to solve this issue:
 
-</blockquote>
 
 
 ## Head tags
 
-<blockquote>
 
 # h1 Heading 8-)
 ## h2 Heading
@@ -119,7 +115,6 @@ Please use Equation \eqref{eq:last} to solve this issue:
 ##### h5 Heading
 ###### h6 Heading
 
-</blockquote>
 
 ## Horizontal Rules
 
@@ -132,7 +127,6 @@ ___
 
 ## Typographic replacements
 
-<blockquote>
 
 Enable typographer option to see result.
 
@@ -144,11 +138,9 @@ test.. test... test..... test?..... test!....
 
 "Smartypants, double quotes" and 'single quotes'
 
-</blockquote>
 
 ## Emphasis
 
-<blockquote>
 
 **This is bold text**
 
@@ -160,7 +152,6 @@ _This is italic text_
 
 ~~Strikethrough~~
 
-</blockquote>
 
 
 ## Blockquotes
