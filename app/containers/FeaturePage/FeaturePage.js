@@ -4,9 +4,9 @@ import { Helmet } from 'react-helmet';
 // import decode from 'decode-html';
 import Preview from 'components/Preview';
 import CodeMirror from 'react-codemirror';
+import 'libs/codemirror/markdown';
 import hljs from 'highlight.js';
 import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/xml/xml';
 import './style.scss';
 
