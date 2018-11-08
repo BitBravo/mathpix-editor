@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Parser from 'html-react-parser';
-import ReactDOM from 'react-dom';
 import hljs from 'highlight.js';
 import './style.scss';
 
@@ -23,6 +22,7 @@ const md = require('markdown-it')({
     return '';
   }
 })
+  .use(require('libs/mathParse')())
   .use(require('markdown-it-footnote'))
   .use(require('markdown-it-sub'))
   .use(require('markdown-it-sup'))
@@ -31,7 +31,6 @@ const md = require('markdown-it')({
   .use(require('markdown-it-highlightjs'), { auto: true, code: true })
   .use(require('markdown-it-emoji'))
   .use(require('markdown-it-ins'))
-  .use(require('libs/mathParse')())
   .use(require('libs/lineNumber'));
 
 export default class Preview extends Component {
@@ -50,6 +49,7 @@ export default class Preview extends Component {
     this.delay = 1000;
     this.timeout = null;
     this.previewActiveFlag = false;
+    this.resultBlock = [];
     this.state = {
       loaded: false,  // eslint-disable-line
       hasError: false, // eslint-disable-line
@@ -72,6 +72,7 @@ export default class Preview extends Component {
       this.previewActiveFlag = false;
       this.props.focusControl(false);
     });
+    // this.getResultCodeBlock();
   }
 
 
@@ -98,6 +99,7 @@ export default class Preview extends Component {
     this.preview.removeEventListener('mouseleave', this);
   }
 
+  // eslint-disable-next-line react/sort-comp
   mathConverter() {
     this.timeout = null;
     const data = md.render(this.props.math);
@@ -123,24 +125,45 @@ export default class Preview extends Component {
   };
 
   scrollSync = (point) => {
-    const className = `line${point.lineNumber}`;
-    const child = document.querySelector(`.${className}`);
-    this.preview.scrollTop = (child.offsetTop - point.offset);
+    if (this.resultBlock.length === 0) this.getResultCodeBlock();
+
+    if (typeof point === 'object') {
+      let scrollPoint = 0;
+      if (point.matchLine) {
+        scrollPoint = this.resultBlock[point.matchLine].pos[0] + (this.resultBlock[point.matchLine].pos[1] * point.offestAds);
+      } else {
+        const beforeLineOffset = point.beforeLine === 0 ? 2 : (this.resultBlock[point.beforeLine].pos[0] + this.resultBlock[point.beforeLine].pos[1]);
+        scrollPoint = beforeLineOffset + ((this.resultBlock[point.afterLine].pos[0] - beforeLineOffset) * point.offestAds);
+        // console.log('AfterTop, BeforeBottom', this.resultBlock[point.afterLine].pos[0], beforeLineOffset);
+      }
+      this.preview.scrollTop = scrollPoint;
+    }
+    return this.resultBlock;
+  }
+
+  getResultCodeBlock = () => {
+    const elements = document.querySelectorAll('.line-block');
+    elements.forEach((element, i) => {
+      let blockArea = elements[i].attributes['data-line'].value.split(',');
+      blockArea = blockArea.map((v) => parseInt(v, 10));
+      const blockContent = [(elements[i].offsetTop - 2), elements[i].clientHeight];
+      for (let j = blockArea[0]; j < blockArea[1]; j += 1) {
+        this.resultBlock[j] = { area: blockArea, pos: blockContent };
+      }
+    });
   }
 
   handleScroll = (e) => {
+    const cPoint = e.srcElement.scrollTop;
+    if (this.resultBlock.length === 0) this.getResultCodeBlock();
     if (!this.previewActiveFlag) return;
-    const elements = document.querySelectorAll('.line-block');
-    let lineNumber = 0;
-    let offset = 0;
-    const scrTop = e.srcElement.scrollTop;
-    for (let i = 0; i < elements.length; i += 1) {
-      offset = elements[i].offsetTop;
-      if (offset > scrTop) {
-        lineNumber = elements[i].attributes['data-line'].value;
-        this.props.scrollhandler(lineNumber, (offset - scrTop));
-        return;
-      }
+
+    const currentPoint = this.resultBlock.find((block) => {
+      if (typeof block === 'object') return cPoint < (block.pos[0] + block.pos[1]);
+    });
+    if (currentPoint) {
+      const ads = (cPoint - currentPoint.pos[0]) / currentPoint.pos[1];
+      this.props.scrollhandler(currentPoint.area, ads);
     }
   }
 
