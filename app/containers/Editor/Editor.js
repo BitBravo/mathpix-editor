@@ -37,8 +37,8 @@ $$
 ### Brackets
 
 \\[
-  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } , 
-  [ \vec { F } = m \vec { a } ] , 
+  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } ,
+  [ \vec { F } = m \vec { a } ] ,
   \left| \frac { a } { b } \right| \left\| \frac { a } { b } \right\| \left\langle \frac { a } { b } \right\rangle \{ \sqrt { a + \sqrt { a + \sqrt { a } } } \rightarrow \infty \}
 \\]
 
@@ -103,8 +103,6 @@ Look at the Equation \eqref{eq:2}.
 Please use Equation \eqref{eq:last} to solve this issue:
 
 
-## Head tags
-
 # h1 Heading 8-)
 ## h2 Heading
 ### h3 Heading
@@ -145,7 +143,6 @@ __This is bold text__
 _This is italic text_
 
 ~~Strikethrough~~
-
 
 ## Blockquotes
 
