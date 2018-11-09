@@ -2,8 +2,9 @@
 /* eslint-disable */
 require('../mathjax');
 
-let count = 0,
-  mathNumber = [];
+let count = 0;
+const mathNumber = [];
+
 (function (root, factory) {
   if (typeof exports === 'object') {
     module.exports = factory();
@@ -138,7 +139,7 @@ let count = 0,
     if (tagId) {
       mathNumber[tagId] = `[${count}]`;
     }
-    return token.type === 'inline_math' ? `<span className="math-block">${mathEquation}</span>` : `<p className="math-block">${mathEquation}${equationNode}</p>`;
+    return token.type === 'inline_math' ? `<span className="math-inline">${mathEquation}</span>` : `<span className="math-block">${mathEquation}${equationNode}</span>`;
   };
 
   const renderReference = (token) => {
@@ -164,7 +165,8 @@ let count = 0,
         md.renderer.rules[key] = (tokens, idx) => (
           tokens[idx].type === 'reference_note' ?
             renderReference(tokens[idx])
-            : renderMath(tokens, tokens[idx]));
+            : renderMath(tokens, tokens[idx])
+        );
       });
     };
   };
