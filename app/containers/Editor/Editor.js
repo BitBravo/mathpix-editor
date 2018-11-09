@@ -2,10 +2,11 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import Preview from 'components/Preview';
 import CodeMirror from 'react-codemirror';
+import 'libs/codemirror/markdown';
 import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/xml/xml';
 import './style.scss';
+
 
 const math = String.raw`
 ## Mathematics
@@ -37,8 +38,8 @@ $$
 ### Brackets
 
 \\[
-  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } ,
-  [ \vec { F } = m \vec { a } ] ,
+  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } , 
+  [ \vec { F } = m \vec { a } ] , 
   \left| \frac { a } { b } \right| \left\| \frac { a } { b } \right\| \left\langle \frac { a } { b } \right\rangle \{ \sqrt { a + \sqrt { a + \sqrt { a } } } \rightarrow \infty \}
 \\]
 
@@ -131,7 +132,6 @@ test.. test... test..... test?..... test!....
 
 "Smartypants, double quotes" and 'single quotes'
 
-
 ## Emphasis
 
 **This is bold text**
@@ -143,8 +143,6 @@ __This is bold text__
 _This is italic text_
 
 ~~Strikethrough~~
-
-## Blockquotes
 
 
 > Blockquotes can also be nested...
@@ -298,7 +296,7 @@ It converts "HTML", but keep intact partial entries like "xxxHTMLyyy" and so on.
   \label{eq:last}
 \end{equation}
 ok, Great.
-  `;
+`;
 
 export default class Editor extends React.PureComponent {
   constructor(props) {
