@@ -1,6 +1,6 @@
 
+/* eslint-disable */
 require('../mathjax');
-
 
 let count = 0,
   mathNumber = [];
