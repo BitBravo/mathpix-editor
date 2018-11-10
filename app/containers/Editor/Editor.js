@@ -398,7 +398,17 @@ export default class Editor extends React.PureComponent {
       lineWrapping: true,
       autoRefresh: true,
       extraKeys: {
-        Enter: (cm) => cm.replaceSelection('\n')
+        Enter: (cm) => cm.replaceSelection('\n'),
+        Backspace: (cm) => {
+          const Pos = cm.doc.getCursor();
+          const previousLine = Pos.line - 1;
+          const beforeLine = cm.doc.getLine(previousLine);
+          cm.execCommand('delCharBefore');
+
+          if (!beforeLine.match(/[a-zA-Z0-9$-/:-?{-~!"^_`[\]]/g) && Pos.ch === 0) {
+            cm.execCommand('goLineStart');
+          }
+        }
       },
     };
 
