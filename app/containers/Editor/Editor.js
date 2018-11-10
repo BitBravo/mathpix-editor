@@ -314,8 +314,20 @@ export default class Editor extends React.PureComponent {
     this.scrollEvent = this.scrollEvent.bind(this);
   }
 
-  componentDidMount() {
-    // this.createCodeBlock();
+  getBlockNumbers = () => {
+    const currentLine = this.editor.codeMirror.lineAtHeight(0);
+    const ObjectKeys = Object.keys(this.codeBlock);
+
+    const matchLine = ObjectKeys.find((key) => (parseInt(key, 10) === currentLine));
+    const afterLine = ObjectKeys.find((key) => parseInt(key, 10) > currentLine);
+    const beforeLineTemp = ObjectKeys[(ObjectKeys.indexOf(afterLine) - 1)] || 0;
+    const beforeLine = (parseInt(beforeLineTemp, 10)) < 0 ? parseInt(0, 10) : parseInt(beforeLineTemp, 10);
+
+    return {
+      lineNumbers: {
+        ...{ beforeLine }, ...{ currentLine }, ...{ matchLine }, ...{ afterLine }
+      }
+    };
   }
 
   focusControl = (e) => {
@@ -331,6 +343,23 @@ export default class Editor extends React.PureComponent {
     this.setState({
       markdownSrc: code,
     });
+  }
+
+  createLineArray = (flag) => {
+    if (flag) this.lineOffsetArray = [];
+    const doc = this.editor.codeMirror.getDoc();
+    if (this.lineOffsetArray.length === 0) {
+      for (let i = 0; i < doc.size; i += 1) {
+        this.lineOffsetArray[i] = this.editor.codeMirror.heightAtLine(i, 'local');
+      }
+    }
+  }
+
+  scrollhandler = (lineNumbers, offset) => {
+    this.createLineArray();
+    const blockHeight = this.lineOffsetArray[lineNumbers[1]] - this.lineOffsetArray[lineNumbers[0]];
+    const cPoint = this.lineOffsetArray[lineNumbers[0]] + (blockHeight * offset);
+    document.querySelector('.CodeMirror-scroll').scrollTop = cPoint;
   }
 
   scrollEvent = (e) => {
@@ -360,39 +389,6 @@ export default class Editor extends React.PureComponent {
       // console.log('startLineOffset, scrollTop, endLineOffset =>', this.lineOffsetArray[blockStartLine], e.top, this.lineOffsetArray[blockEndLine]);
     }
     this.preview.scrollSync({ ...lineNumbers, offestAds: ads });
-  }
-
-  getBlockNumbers = () => {
-    const currentLine = this.editor.codeMirror.lineAtHeight(0);
-    const ObjectKeys = Object.keys(this.codeBlock);
-
-    const matchLine = ObjectKeys.find((key) => (parseInt(key, 10) === currentLine));
-    const afterLine = ObjectKeys.find((key) => parseInt(key, 10) > currentLine);
-    const beforeLineTemp = ObjectKeys[(ObjectKeys.indexOf(afterLine) - 1)] || 0;
-    const beforeLine = (parseInt(beforeLineTemp, 10)) < 0 ? parseInt(0, 10) : parseInt(beforeLineTemp, 10);
-
-    return {
-      lineNumbers: {
-        ...{ beforeLine }, ...{ currentLine }, ...{ matchLine }, ...{ afterLine }
-      }
-    };
-  }
-
-  createLineArray = (flag) => {
-    if (flag) this.lineOffsetArray = [];
-    const doc = this.editor.codeMirror.getDoc();
-    if (this.lineOffsetArray.length === 0) {
-      for (let i = 0; i < doc.size; i += 1) {
-        this.lineOffsetArray[i] = this.editor.codeMirror.heightAtLine(i, 'local');
-      }
-    }
-  }
-
-  scrollhandler = (lineNumbers, offset) => {
-    this.createLineArray();
-    const blockHeight = this.lineOffsetArray[lineNumbers[1]] - this.lineOffsetArray[lineNumbers[0]];
-    const cPoint = this.lineOffsetArray[lineNumbers[0]] + (blockHeight * offset);
-    document.querySelector('.CodeMirror-scroll').scrollTop = cPoint;
   }
 
   render() {
