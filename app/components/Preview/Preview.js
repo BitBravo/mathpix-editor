@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Parser from 'html-react-parser';
-import ReactDOM from 'react-dom';
 import hljs from 'highlight.js';
 import './style.scss';
 
@@ -32,7 +31,7 @@ const md = require('markdown-it')({
   .use(require('markdown-it-highlightjs'), { auto: true, code: true })
   .use(require('markdown-it-emoji'))
   .use(require('markdown-it-ins'))
-  .use(require('libs/lineNumber'));
+  .use(require('libs/lineNumber'))
   .use(require('markdown-it-ins'));
 
 export default class Preview extends Component {
@@ -74,7 +73,6 @@ export default class Preview extends Component {
       this.previewActiveFlag = false;
       this.props.focusControl(false);
     });
-    // this.getResultCodeBlock();
   }
 
 
