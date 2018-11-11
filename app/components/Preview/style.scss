@@ -1,13 +1,33 @@
   .react-mathjax-preview {
-    overflow-wrap: break-word;
+      overflow-wrap: break-word;
   }
 
-  .equation-number{
-    padding-left: 30px;
+  .equation-number {
+      padding-left: 30px;
   }
-  .math-block{
-    text-align: center;
+
+  .math-block {
+      text-align: center;
+      display: block;
   }
-  img{
-    max-width: 100%;
+
+  img {
+      max-width: 100%;
+  }
+
+  .react-mathjax-preview {
+      overflow-wrap: break-word;
+  }
+
+  .equation-number {
+      padding-left: 30px;
+  }
+
+  .math-block {
+      text-align: center;
+      display: block;
+  }
+
+  img {
+      max-width: 100%;
   }

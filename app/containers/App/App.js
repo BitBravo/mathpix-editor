@@ -20,7 +20,6 @@ import './style.scss';
 const App = () => (
   <div className="container">
     <Helmet
-      titleTemplate="%s - Markedown Editor"
       defaultTitle="Markedown Editor"
     >
       <meta name="description" content="This is a Markedown Editor" />
