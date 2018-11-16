@@ -1,7 +1,6 @@
 
 require('../mathjax');
 
-
 let count = 0;
 const mathNumber = [];
 
@@ -142,9 +141,7 @@ const mathNumber = [];
     return token.type === 'inline_math' ? `<span className="math-inline">${mathEquation}</span>` : `<span className="math-block">${mathEquation}${equationNode}</span>`;
   };
 
-  const renderReference = (token) => {
-    return `<a href="javascript:void(0)" style="cursor: pointer; text-decoration: none;" className="clickable-link" value=${token.content}>${mathNumber[token.content] || token.content} </a>`;
-  };
+  const renderReference = (token) => `<a href="javascript:void(0)" style="cursor: pointer; text-decoration: none;" className="clickable-link" value=${token.content}>${mathNumber[token.content] || token.content} </a>`;
 
   return (options) => {
     const defaults = {
