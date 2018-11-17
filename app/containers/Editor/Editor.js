@@ -38,8 +38,8 @@ $$
 ### Brackets
 
 \\[
-  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } , 
-  [ \vec { F } = m \vec { a } ] , 
+  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } ,
+  [ \vec { F } = m \vec { a } ] ,
   \left| \frac { a } { b } \right| \left\| \frac { a } { b } \right\| \left\langle \frac { a } { b } \right\rangle \{ \sqrt { a + \sqrt { a + \sqrt { a } } } \rightarrow \infty \}
 \\]
 
@@ -344,7 +344,6 @@ export default class Editor extends React.PureComponent {
       markdownSrc: code,
     });
   }
-
   createLineArray = (flag) => {
     if (flag) this.lineOffsetArray = [];
     const doc = this.editor.codeMirror.getDoc();
@@ -389,6 +388,13 @@ export default class Editor extends React.PureComponent {
       // console.log('startLineOffset, scrollTop, endLineOffset =>', this.lineOffsetArray[blockStartLine], e.top, this.lineOffsetArray[blockEndLine]);
     }
     this.preview.scrollSync({ ...lineNumbers, offestAds: ads });
+  }
+
+  scrollhandler = (lineNumbers, offset) => {
+    this.createLineArray();
+    const blockHeight = this.lineOffsetArray[lineNumbers[1]] - this.lineOffsetArray[lineNumbers[0]];
+    const cPoint = this.lineOffsetArray[lineNumbers[0]] + (blockHeight * offset);
+    document.querySelector('.CodeMirror-scroll').scrollTop = cPoint;
   }
 
   render() {

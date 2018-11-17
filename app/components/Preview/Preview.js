@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Parser from 'html-react-parser';
-import ReactDOM from 'react-dom';
 import hljs from 'highlight.js';
 import './style.scss';
 
@@ -74,7 +73,6 @@ export default class Preview extends Component {
       this.previewActiveFlag = false;
       this.props.focusControl(false);
     });
-    // this.getResultCodeBlock();
   }
 
 
