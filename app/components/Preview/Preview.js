@@ -32,7 +32,8 @@ const md = require('markdown-it')({
   .use(require('markdown-it-highlightjs'), { auto: true, code: true })
   .use(require('markdown-it-emoji'))
   .use(require('markdown-it-ins'))
-  .use(require('libs/lineNumber'));
+  .use(require('libs/lineNumber'))
+  .use(require('markdown-it-ins'));
 
 export default class Preview extends Component {
   static propTypes = {
