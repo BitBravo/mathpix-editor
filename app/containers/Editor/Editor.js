@@ -38,8 +38,8 @@ $$
 ### Brackets
 
 \\[
-  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } , 
-  [ \vec { F } = m \vec { a } ] , 
+  \left( \frac { x d x } { d y } - \frac { y d y } { d x } \right) ^ { 2 } ,
+  [ \vec { F } = m \vec { a } ] ,
   \left| \frac { a } { b } \right| \left\| \frac { a } { b } \right\| \left\langle \frac { a } { b } \right\rangle \{ \sqrt { a + \sqrt { a + \sqrt { a } } } \rightarrow \infty \}
 \\]
 
@@ -314,8 +314,20 @@ export default class Editor extends React.PureComponent {
     this.scrollEvent = this.scrollEvent.bind(this);
   }
 
-  componentDidMount() {
-    // this.createCodeBlock();
+  getBlockNumbers = () => {
+    const currentLine = this.editor.codeMirror.lineAtHeight(0);
+    const ObjectKeys = Object.keys(this.codeBlock);
+
+    const matchLine = ObjectKeys.find((key) => (parseInt(key, 10) === currentLine));
+    const afterLine = ObjectKeys.find((key) => parseInt(key, 10) > currentLine);
+    const beforeLineTemp = ObjectKeys[(ObjectKeys.indexOf(afterLine) - 1)] || 0;
+    const beforeLine = (parseInt(beforeLineTemp, 10)) < 0 ? parseInt(0, 10) : parseInt(beforeLineTemp, 10);
+
+    return {
+      lineNumbers: {
+        ...{ beforeLine }, ...{ currentLine }, ...{ matchLine }, ...{ afterLine }
+      }
+    };
   }
 
   focusControl = (e) => {
@@ -331,6 +343,22 @@ export default class Editor extends React.PureComponent {
     this.setState({
       markdownSrc: code,
     });
+  }
+  createLineArray = (flag) => {
+    if (flag) this.lineOffsetArray = [];
+    const doc = this.editor.codeMirror.getDoc();
+    if (this.lineOffsetArray.length === 0) {
+      for (let i = 0; i < doc.size; i += 1) {
+        this.lineOffsetArray[i] = this.editor.codeMirror.heightAtLine(i, 'local');
+      }
+    }
+  }
+
+  scrollhandler = (lineNumbers, offset) => {
+    this.createLineArray();
+    const blockHeight = this.lineOffsetArray[lineNumbers[1]] - this.lineOffsetArray[lineNumbers[0]];
+    const cPoint = this.lineOffsetArray[lineNumbers[0]] + (blockHeight * offset);
+    document.querySelector('.CodeMirror-scroll').scrollTop = cPoint;
   }
 
   scrollEvent = (e) => {
@@ -362,32 +390,6 @@ export default class Editor extends React.PureComponent {
     this.preview.scrollSync({ ...lineNumbers, offestAds: ads });
   }
 
-  getBlockNumbers = () => {
-    const currentLine = this.editor.codeMirror.lineAtHeight(0);
-    const ObjectKeys = Object.keys(this.codeBlock);
-
-    const matchLine = ObjectKeys.find((key) => (parseInt(key, 10) === currentLine));
-    const afterLine = ObjectKeys.find((key) => parseInt(key, 10) > currentLine);
-    const beforeLineTemp = ObjectKeys[(ObjectKeys.indexOf(afterLine) - 1)] || 0;
-    const beforeLine = (parseInt(beforeLineTemp, 10)) < 0 ? parseInt(0, 10) : parseInt(beforeLineTemp, 10);
-
-    return {
-      lineNumbers: {
-        ...{ beforeLine }, ...{ currentLine }, ...{ matchLine }, ...{ afterLine }
-      }
-    };
-  }
-
-  createLineArray = (flag) => {
-    if (flag) this.lineOffsetArray = [];
-    const doc = this.editor.codeMirror.getDoc();
-    if (this.lineOffsetArray.length === 0) {
-      for (let i = 0; i < doc.size; i += 1) {
-        this.lineOffsetArray[i] = this.editor.codeMirror.heightAtLine(i, 'local');
-      }
-    }
-  }
-
   scrollhandler = (lineNumbers, offset) => {
     this.createLineArray();
     const blockHeight = this.lineOffsetArray[lineNumbers[1]] - this.lineOffsetArray[lineNumbers[0]];
@@ -402,7 +404,17 @@ export default class Editor extends React.PureComponent {
       lineWrapping: true,
       autoRefresh: true,
       extraKeys: {
-        Enter: (cm) => cm.replaceSelection('\n')
+        Enter: (cm) => cm.replaceSelection('\n'),
+        Backspace: (cm) => {
+          const Pos = cm.doc.getCursor();
+          const previousLine = Pos.line - 1;
+          const beforeLine = cm.doc.getLine(previousLine);
+          cm.execCommand('delCharBefore');
+
+          if (!beforeLine.match(/[a-zA-Z0-9$-/:-?{-~!"^_`[\]]/g) && Pos.ch === 0) {
+            cm.execCommand('goLineStart');
+          }
+        }
       },
     };
 
