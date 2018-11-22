@@ -118,7 +118,6 @@ export default class Preview extends Component {
   }
 
   handleClick = (e) => {
-    console.log('@@@@@@@@@@@@')
     const domNode = e.target.attributes;
     if (domNode.length > 1 && domNode[1].value === 'clickable-link') {
       const domID = domNode[2].value;
