@@ -50,6 +50,7 @@ export default class Preview extends Component {
     this.timeout = null;
     this.previewActiveFlag = false;
     this.resultBlock = [];
+    this.repeatCount = 0;
     this.state = {
       loaded: false,  // eslint-disable-line
       hasError: false, // eslint-disable-line
@@ -124,6 +125,48 @@ export default class Preview extends Component {
     }
   };
 
+  handleScroll = (e) => {
+    const { scrollHeight: cHeight, clientHeight: wHeight, scrollTop: cScrollTop } = e.srcElement;
+    if (this.resultBlock.length === 0) this.getResultCodeBlock();
+    if (!this.previewActiveFlag) return;
+    if (cScrollTop === (cHeight - wHeight - 1) && this.repeatCount) return;
+
+    // if (this.repeatCount) {
+    //   e.srcElement.scrollTop = cScrollTop - 1;
+    //   this.repeatCount = this.repeatCount > 0 ? (this.repeatCount - 1) : 0;
+    // }
+
+    let currentCodeBlock = [];
+    let ads = 0;
+    if (cScrollTop < (cHeight - wHeight)) {
+      currentCodeBlock = this.resultBlock.find((block) => (typeof block === 'object' ? cScrollTop < (block.pos[0] + block.pos[1]) : null));
+      this.repeatCount = 0;
+      ads = (cScrollTop - currentCodeBlock.pos[0]) / currentCodeBlock.pos[1];
+    } else {
+      const remainCodeBlocks = this.resultBlock.filter((block, index) => {
+        if (typeof block === 'object') {
+          if (cScrollTop < (block.pos[0] + block.pos[1])) {
+            // eslint-disable-next-line no-nested-ternary
+            return index === 0 ?
+              true
+              :
+              (typeof this.resultBlock[index - 1] === 'object' ?
+                (this.resultBlock[index - 1].pos[0] + this.resultBlock[index - 1].pos[1]) < (block.pos[0] + block.pos[1])
+                :
+                null);
+          }
+        }
+      });
+      currentCodeBlock = remainCodeBlocks[this.repeatCount];
+      e.srcElement.scrollTop = cScrollTop - 1;
+      this.repeatCount = this.repeatCount < remainCodeBlocks.length - 1 ? (this.repeatCount + 1) : remainCodeBlocks.length - 1;
+      ads = 0;
+    }
+    if (currentCodeBlock) {
+      this.props.scrollhandler(currentCodeBlock.area, ads);
+    }
+  }
+
   scrollSync = (point) => {
     if (this.resultBlock.length === 0) this.getResultCodeBlock();
 
@@ -151,20 +194,6 @@ export default class Preview extends Component {
         this.resultBlock[j] = { area: blockArea, pos: blockContent };
       }
     });
-  }
-
-  handleScroll = (e) => {
-    const cPoint = e.srcElement.scrollTop;
-    if (this.resultBlock.length === 0) this.getResultCodeBlock();
-    if (!this.previewActiveFlag) return;
-
-    const currentPoint = this.resultBlock.find((block) => {
-      if (typeof block === 'object') return cPoint < (block.pos[0] + block.pos[1]);
-    });
-    if (currentPoint) {
-      const ads = (cPoint - currentPoint.pos[0]) / currentPoint.pos[1];
-      this.props.scrollhandler(currentPoint.area, ads);
-    }
   }
 
   render() {
