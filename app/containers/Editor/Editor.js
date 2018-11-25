@@ -7,7 +7,6 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/xml/xml';
 import './style.scss';
 
-
 const math = String.raw`
 ## Mathematics
 
@@ -305,19 +304,16 @@ export default class Editor extends React.PureComponent {
     this.editorActiveFlag = true;
     this.codeBlock = [];
     this.lineOffsetArray = [];
+    this.updateTime = null;
+
     this.state = {
       markdownSrc: math,
     };
-
-    this.handleMarkdownChange = this.handleMarkdownChange.bind(this);
-    this.updateCode = this.updateCode.bind(this);
-    this.scrollEvent = this.scrollEvent.bind(this);
   }
 
   getBlockNumbers = () => {
     const currentLine = this.editor.codeMirror.lineAtHeight(0);
     const ObjectKeys = Object.keys(this.codeBlock);
-
     const matchLine = ObjectKeys.find((key) => (parseInt(key, 10) === currentLine));
     const afterLine = ObjectKeys.find((key) => parseInt(key, 10) > currentLine);
     const beforeLineTemp = ObjectKeys[(ObjectKeys.indexOf(afterLine) - 1)] || 0;
@@ -331,19 +327,18 @@ export default class Editor extends React.PureComponent {
   }
 
   focusControl = (e) => {
-    if (e) this.editorActiveFlag = false;
-    else this.editorActiveFlag = true;
+    this.editorActiveFlag = !e;
   }
 
-  handleMarkdownChange(evt) {
-    this.setState({ markdownSrc: evt.target.value });
+  updateCode = (code) => {
+    if (this.updateTime) clearTimeout(this.updateTime);
+    this.updateTime = setTimeout(() => {
+      this.setState({
+        markdownSrc: code,
+      });
+    }, 200);
   }
 
-  updateCode(code) {
-    this.setState({
-      markdownSrc: code,
-    });
-  }
   createLineArray = (flag) => {
     if (flag) this.lineOffsetArray = [];
     const doc = this.editor.codeMirror.getDoc();
@@ -370,23 +365,21 @@ export default class Editor extends React.PureComponent {
     }
 
     const { lineNumbers } = this.getBlockNumbers();
-    let ads = 0;
-    let blockStartLine = 0;
-    let blockEndLine = 0;
+    let { ads, blockStartLine, blockEndLine } = !lineNumbers.matchLine ?
+      (() => {
+        blockStartLine = lineNumbers.beforeLine === 0 ? lineNumbers.beforeLine : (lineNumbers.beforeLine + 1);
+        blockEndLine = lineNumbers.afterLine;
+        ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]);
+        return { blockStartLine, blockEndLine, ads };
+      })
+      :
+      (() => {
+        blockStartLine = this.codeBlock[lineNumbers.currentLine].area['0'] || 0;
+        blockEndLine = this.codeBlock[lineNumbers.currentLine].area['1'] || 0;
+        ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]) || 0;
+        return { blockStartLine, blockEndLine, ads };
+      })();
 
-    if (!lineNumbers.matchLine) {
-      blockStartLine = lineNumbers.beforeLine === 0 ? lineNumbers.beforeLine : (lineNumbers.beforeLine + 1);
-      blockEndLine = lineNumbers.afterLine;
-      ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]);
-    } else {
-      // eslint-disable-next-line prefer-destructuring
-      blockStartLine = this.codeBlock[lineNumbers.currentLine].area[0];
-      // eslint-disable-next-line prefer-destructuring
-      blockEndLine = this.codeBlock[lineNumbers.currentLine].area[1];
-      ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]);
-      // console.log('startLine, endLine =>', blockStartLine, blockEndLine);
-      // console.log('startLineOffset, scrollTop, endLineOffset =>', this.lineOffsetArray[blockStartLine], e.top, this.lineOffsetArray[blockEndLine]);
-    }
     this.preview.scrollSync({ ...lineNumbers, offestAds: ads });
   }
 
@@ -410,7 +403,6 @@ export default class Editor extends React.PureComponent {
           const previousLine = Pos.line - 1;
           const beforeLine = cm.doc.getLine(previousLine);
           cm.execCommand('delCharBefore');
-
           if (!beforeLine.match(/[a-zA-Z0-9$-/:-?{-~!"^_`[\]]/g) && Pos.ch === 0) {
             cm.execCommand('goLineStart');
           }
@@ -425,8 +417,8 @@ export default class Editor extends React.PureComponent {
           <meta name="description" content="React Markdown" />
         </Helmet>
         <div>
-          <CodeMirror className="editor-pane" value={this.state.markdownSrc} ref={(editor) => (this.editor = editor)} onChange={this.updateCode} onScroll={this.scrollEvent} options={options} />
-          <Preview math={this.state.markdownSrc} ref={(ref) => (this.preview = ref)} scrollhandler={this.scrollhandler} focusControl={this.focusControl} />
+          <CodeMirror className="editor-pane" value={this.state.markdownSrc} ref={(editor) => { this.editor = editor; }} onChange={this.updateCode} onScroll={this.scrollEvent} options={options} />
+          <Preview math={this.state.markdownSrc} ref={(ref) => { this.preview = ref; }} scrollhandler={this.scrollhandler} focusControl={this.focusControl} />
         </div>
       </article>
     );

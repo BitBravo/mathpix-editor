@@ -9,6 +9,5 @@ module.exports = function lineNumbers(md) {
       }
     }
   }
-
   md.core.ruler.before('linkify', 'curly_attributes', appendAttribute);
 };
