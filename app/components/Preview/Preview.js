@@ -18,7 +18,6 @@ const md = require('markdown-it')({
         return hljs.highlight(lang, str).value;
       } catch (__) { } // eslint-disable-line
     }
-
     return '';
   }
 })
@@ -47,20 +46,16 @@ export default class Preview extends Component {
 
   constructor(props) {
     super(props);
-    this.delay = 1000;
-    this.timeout = null;
     this.previewActiveFlag = false;
     this.resultBlock = [];
     this.clickPoint = 0;
     this.state = {
-      loaded: false,  // eslint-disable-line
-      hasError: false, // eslint-disable-line
-      math: '', // eslint-disable-line
+      math: '',
     };
   }
 
   componentWillMount() {
-    this.Update();
+    this.updateMath(this.props.math);
   }
 
   componentDidMount() {
@@ -76,21 +71,8 @@ export default class Preview extends Component {
     });
   }
 
-
-  componentWillReceiveProps() {
-    this.Update();
-  }
-
-  shouldComponentUpdate(nextProps) {
-    if (!nextProps.math) return false;
-    return nextProps.math !== this.state.math;
-  }
-
-  componentDidCatch(error, info) {
-    // eslint-disable-next-line
-    this.setState({ hasError: true });
-    // eslint-disable-next-line
-    logErrorToMyService(error, info);
+  componentWillReceiveProps(nextProps) {
+    this.updateMath(nextProps.math);
   }
 
   componentWillUnmount() {
@@ -100,21 +82,47 @@ export default class Preview extends Component {
     this.preview.removeEventListener('mouseleave', this);
   }
 
-  // eslint-disable-next-line react/sort-comp
-  mathConverter() {
-    this.timeout = null;
-    const data = md.render(this.props.math);
-    this.setState({ math: data });
+  getResultCodeBlock = () => {
+    const elements = document.querySelectorAll('.line-block');
+    elements.forEach((element, i) => {
+      let blockArea = elements[i].attributes['data-line'].value.split(',');
+      blockArea = blockArea.map((v) => parseInt(v, 10));
+      const blockContent = [(elements[i].offsetTop - 2), elements[i].clientHeight];
+      for (let j = blockArea[0]; j < blockArea[1]; j += 1) {
+        this.resultBlock[j] = { area: blockArea, pos: blockContent };
+      }
+    });
   }
 
-  Update() {
-    const self = this;
-    if (!this.timeout) {
-      this.timeout = setTimeout(() => {
-        md.render(this.props.math);
-        self.mathConverter(self);
-      }, this.delay);
+  updateMath = (mathString) => {
+    const { math } = this.state;
+    md.render(mathString);
+    const newMath = Parser(md.render(mathString));
+    if (math !== newMath) {
+      this.setState({
+        math: newMath
+      });
     }
+  }
+
+  scrollSync = (point) => {
+    if (this.resultBlock.length === 0) this.getResultCodeBlock();
+
+    this.preview.scrollTop = typeof point === 'object' ?
+      (() => {
+        const scrollPoint = point.matchLine ?
+          (this.resultBlock[point.matchLine].pos[0] + (this.resultBlock[point.matchLine].pos[1] * point.offestAds))
+          :
+          (() => {
+            const beforeLineOffset = point.beforeLine === 0 ? 2 : (this.resultBlock[point.beforeLine].pos[0] + this.resultBlock[point.beforeLine].pos[1]);
+            return (beforeLineOffset + ((this.resultBlock[point.afterLine].pos[0] - beforeLineOffset) * point.offestAds));
+          })();
+        return scrollPoint;
+      })()
+      :
+      null;
+
+    return this.resultBlock;
   }
 
   handleClick = (e) => {
@@ -134,43 +142,17 @@ export default class Preview extends Component {
     }
   };
 
-  scrollSync = (point) => {
-    if (this.resultBlock.length === 0) this.getResultCodeBlock();
-
-    if (typeof point === 'object') {
-      let scrollPoint = 0;
-      if (point.matchLine) {
-        scrollPoint = this.resultBlock[point.matchLine].pos[0] + (this.resultBlock[point.matchLine].pos[1] * point.offestAds);
-      } else {
-        const beforeLineOffset = point.beforeLine === 0 ? 2 : (this.resultBlock[point.beforeLine].pos[0] + this.resultBlock[point.beforeLine].pos[1]);
-        scrollPoint = beforeLineOffset + ((this.resultBlock[point.afterLine].pos[0] - beforeLineOffset) * point.offestAds);
-        // console.log('AfterTop, BeforeBottom', this.resultBlock[point.afterLine].pos[0], beforeLineOffset);
-      }
-      this.preview.scrollTop = scrollPoint;
-    }
-    return this.resultBlock;
-  }
-
-  getResultCodeBlock = () => {
-    const elements = document.querySelectorAll('.line-block');
-    elements.forEach((element, i) => {
-      let blockArea = elements[i].attributes['data-line'].value.split(',');
-      blockArea = blockArea.map((v) => parseInt(v, 10));
-      const blockContent = [(elements[i].offsetTop - 2), elements[i].clientHeight];
-      for (let j = blockArea[0]; j < blockArea[1]; j += 1) {
-        this.resultBlock[j] = { area: blockArea, pos: blockContent };
-      }
-    });
-  }
-
   handleScroll = (e) => {
     const cPoint = e.srcElement.scrollTop;
     if (this.resultBlock.length === 0) this.getResultCodeBlock();
     if (!this.previewActiveFlag) return;
 
-    const currentPoint = this.resultBlock.find((block) => {
-      if (typeof block === 'object') return cPoint < (block.pos[0] + block.pos[1]);
-    });
+    const currentPoint = this.resultBlock.find((block) => (
+      typeof block === 'object' ?
+        (cPoint < (block.pos[0] + block.pos[1]))
+        :
+        false));
+
     if (currentPoint) {
       const ads = (cPoint - currentPoint.pos[0]) / currentPoint.pos[1];
       this.props.scrollhandler(currentPoint.area, ads);
@@ -183,7 +165,7 @@ export default class Preview extends Component {
         className="react-mathjax-preview result-pane"
         ref={(node) => { this.preview = node; }}
       >
-        {Parser(this.state.math)}
+        {this.state.math}
       </div>
     );
   }

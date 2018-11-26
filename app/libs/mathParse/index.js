@@ -106,10 +106,6 @@ const mathNumber = [];
     return true;
   }
 
-  // function escapeHtml(html) {
-  //   return html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\u00a0/g, ' ');
-  // }
-
   function extend(options, defaults) {
     return Object.keys(defaults).reduce((result, key) => {
       if (result[key] === undefined) {
