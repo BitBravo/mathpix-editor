@@ -48,6 +48,7 @@ export default class Preview extends Component {
     super(props);
     this.previewActiveFlag = false;
     this.resultBlock = [];
+    this.clickPoint = 0;
     this.state = {
       math: '',
     };
@@ -128,7 +129,16 @@ export default class Preview extends Component {
     const domNode = e.target.attributes;
     if (domNode.length > 1 && domNode[1].value === 'clickable-link') {
       const domID = domNode[2].value;
-      document.getElementById(domID).scrollIntoView({ behavior: 'smooth' });
+      // document.getElementById(domID).scrollIntoView({ behavior: 'smooth' });
+      const offsetTarget = document.getElementById(domID).offsetTop;
+      const offsetStart = this.preview.scrollTop;
+      const step = Math.abs(offsetTarget - offsetStart) / 20;
+      this.clickPoint = offsetStart;
+      const refeatTimer = setInterval(() => {
+        this.clickPoint = offsetTarget > offsetStart ? (this.clickPoint + step) : (this.clickPoint - step);
+        this.preview.scrollTop = this.clickPoint;
+        if (Math.abs(this.clickPoint - offsetTarget) < step) clearInterval(refeatTimer);
+      }, 10);
     }
   };
 
