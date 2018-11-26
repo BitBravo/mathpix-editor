@@ -18,6 +18,7 @@ const md = require('markdown-it')({
         return hljs.highlight(lang, str).value;
       } catch (__) { } // eslint-disable-line
     }
+
     return '';
   }
 })
@@ -46,8 +47,11 @@ export default class Preview extends Component {
 
   constructor(props) {
     super(props);
+    this.delay = 1000;
+    this.timeout = null;
     this.previewActiveFlag = false;
     this.resultBlock = [];
+    this.repeatCount = 0;
     this.clickPoint = 0;
     this.state = {
       math: '',
@@ -71,8 +75,14 @@ export default class Preview extends Component {
     });
   }
 
+
   componentWillReceiveProps(nextProps) {
     this.updateMath(nextProps.math);
+  }
+
+  shouldComponentUpdate(nextProps) {
+    if (!nextProps.math) return false;
+    return nextProps.math !== this.state.math;
   }
 
   componentWillUnmount() {
@@ -92,17 +102,6 @@ export default class Preview extends Component {
         this.resultBlock[j] = { area: blockArea, pos: blockContent };
       }
     });
-  }
-
-  updateMath = (mathString) => {
-    const { math } = this.state;
-    md.render(mathString);
-    const newMath = Parser(md.render(mathString));
-    if (math !== newMath) {
-      this.setState({
-        math: newMath
-      });
-    }
   }
 
   scrollSync = (point) => {
@@ -129,8 +128,9 @@ export default class Preview extends Component {
     const domNode = e.target.attributes;
     if (domNode.length > 1 && domNode[1].value === 'clickable-link') {
       const domID = domNode[2].value;
+      console.log(document.getElementById(domID))
       // document.getElementById(domID).scrollIntoView({ behavior: 'smooth' });
-      const offsetTarget = document.getElementById(domID).offsetTop;
+      const offsetTarget = (document.getElementById(domID).offsetTop) - (window.innerHeight / 2) || 0;
       const offsetStart = this.preview.scrollTop;
       const step = Math.abs(offsetTarget - offsetStart) / 20;
       this.clickPoint = offsetStart;
@@ -143,19 +143,49 @@ export default class Preview extends Component {
   };
 
   handleScroll = (e) => {
-    const cPoint = e.srcElement.scrollTop;
+    const { scrollHeight: cHeight, clientHeight: wHeight, scrollTop: cScrollTop } = e.srcElement;
     if (this.resultBlock.length === 0) this.getResultCodeBlock();
     if (!this.previewActiveFlag) return;
+    if (cScrollTop === (cHeight - wHeight - 1) && this.repeatCount) return;
 
-    const currentPoint = this.resultBlock.find((block) => (
-      typeof block === 'object' ?
-        (cPoint < (block.pos[0] + block.pos[1]))
-        :
-        false));
-
-    if (currentPoint) {
-      const ads = (cPoint - currentPoint.pos[0]) / currentPoint.pos[1];
-      this.props.scrollhandler(currentPoint.area, ads);
+    let currentCodeBlock = [];
+    let ads = 0;
+    if (cScrollTop < (cHeight - wHeight)) {
+      currentCodeBlock = this.resultBlock.find((block) => (typeof block === 'object' ? cScrollTop < (block.pos[0] + block.pos[1]) : null));
+      this.repeatCount = 0;
+      ads = (cScrollTop - currentCodeBlock.pos[0]) / currentCodeBlock.pos[1];
+    } else {
+      const remainCodeBlocks = this.resultBlock.filter((block, index) => {
+        if (typeof block === 'object') {
+          if (cScrollTop < (block.pos[0] + block.pos[1])) {
+            // eslint-disable-next-line no-nested-ternary
+            return index === 0 ?
+              true
+              :
+              (typeof this.resultBlock[index - 1] === 'object' ?
+                (this.resultBlock[index - 1].pos[0] + this.resultBlock[index - 1].pos[1]) < (block.pos[0] + block.pos[1])
+                :
+                null);
+          }
+        }
+      });
+      currentCodeBlock = remainCodeBlocks[this.repeatCount];
+      e.srcElement.scrollTop = cScrollTop - 1;
+      this.repeatCount = this.repeatCount < remainCodeBlocks.length - 1 ? (this.repeatCount + 1) : remainCodeBlocks.length - 1;
+      ads = 0;
+    }
+    if (currentCodeBlock) {
+      this.props.scrollhandler(currentCodeBlock.area, ads);
+    }
+  }
+  updateMath = (mathString) => {
+    const { math } = this.state;
+    md.render(mathString);
+    const newMath = Parser(md.render(mathString));
+    if (math !== newMath) {
+      this.setState({
+        math: newMath
+      });
     }
   }
 

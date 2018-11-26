@@ -365,21 +365,19 @@ export default class Editor extends React.PureComponent {
     }
 
     const { lineNumbers } = this.getBlockNumbers();
-    let { ads, blockStartLine, blockEndLine } = !lineNumbers.matchLine ?
-      (() => {
-        blockStartLine = lineNumbers.beforeLine === 0 ? lineNumbers.beforeLine : (lineNumbers.beforeLine + 1);
-        blockEndLine = lineNumbers.afterLine;
-        ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]);
-        return { blockStartLine, blockEndLine, ads };
-      })
-      :
-      (() => {
-        blockStartLine = this.codeBlock[lineNumbers.currentLine].area['0'] || 0;
-        blockEndLine = this.codeBlock[lineNumbers.currentLine].area['1'] || 0;
-        ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]) || 0;
-        return { blockStartLine, blockEndLine, ads };
-      })();
+    let ads = 0;
+    let blockStartLine = 0;
+    let blockEndLine = 0;
 
+    if (!lineNumbers.matchLine) {
+      blockStartLine = lineNumbers.beforeLine === 0 ? lineNumbers.beforeLine : (lineNumbers.beforeLine + 1);
+      blockEndLine = lineNumbers.afterLine;
+      ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]);
+    } else {
+      blockStartLine = this.codeBlock[lineNumbers.currentLine].area['0'];
+      blockEndLine = this.codeBlock[lineNumbers.currentLine].area['1'];
+      ads = (e.top - this.lineOffsetArray[blockStartLine]) / (this.lineOffsetArray[blockEndLine] - this.lineOffsetArray[blockStartLine]);
+    }
     this.preview.scrollSync({ ...lineNumbers, offestAds: ads });
   }
 
