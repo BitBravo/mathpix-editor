@@ -48,104 +48,67 @@ export default class Editor extends React.PureComponent {
       markdownSrc: mathDef,
       math: '',
     };
-    // this.exportMethods = this.exportMethods.bind(this);
-    // this.setMarkdown = this.setMarkdown.bind(this);
-    // this.clear = this.clear.bind(this);
+    this.exportMethods = this.exportMethods.bind(this);
+    this.setMarkdown = this.setMarkdown.bind(this);
+    this.clear = this.clear.bind(this);
   }
 
- //  componentDidMount() {
- //    this.exportMethods();
- // //   let res = window.setMarkdown(this.state.markdownSrc)
- //   // console.log('res=>', res);
- //  }
- //
- //  componentWillMount() {
- //    //this.updateMath(this.state.markdownSrc);
- //    //window.setMarkdown(this.state.markdownSrc)
- //  }
-  //
-  // updateMath = (mathString) => {
-  //   const { math } = this.state;
-  //   md.render(mathString);
-  //   const newMath = Parser(md.render(mathString));
-  //   if (math !== newMath) {
-  //     this.setState({
-  //       math: newMath
-  //     });
-  //   }
-  // }
+  componentDidMount() {
+    this.exportMethods();
+    window.setMarkdown(this.state.markdownSrc)
+  }
 
-  // exportMethods() {
-  //   const that = this;
-  //
-  //   window.clear = function () {
-  //     that.clear();
-  //   }
-  //
-  //   window.setMarkdown = function (mathString) {
-  //     window.clear();
-  //     that.setMarkdown(mathString);
-  //     let width = window.equationWidth();
-  //     let height = window.equationHeight();
-  //
-  //    // return [width, height];
-  //
-  //     const w = width;//this.props.dialogWidth;
-  //     const h = height;//this.props.dialogHeight;
-  //     const left = window.screen.width / 2 - w / 2;
-  //     const top = window.screen.height / 2 - h / 2;
-  //
-  //     return window.open(
-  //       'no-editor',
-  //       'text',
-  //       'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' +
-  //       w +
-  //       ', height=' +
-  //       h +
-  //       ', top=' +
-  //       top +
-  //       ', left=' +
-  //       left
-  //     );
-  //
-  //
-  //   };
-  //
-  //   window.equationWidth = function() {
-  //     var result = null;
-  //     var equationSpan = document.getElementsByClassName('setMarkdown')[0];
-  //     if (equationSpan) {
-  //       result = equationSpan.offsetWidth;
-  //     }
-  //     return result;
-  //   }
-  //
-  //   window.equationHeight = function() {
-  //     var equationBox = document.getElementsByClassName('setMarkdown')[0];
-  //     if (equationBox) {
-  //       return equationBox.clientHeight;
-  //     } else {
-  //       return null;
-  //     }
-  //   }
-  // }
-  //
-  // clear() {
-  //   this.setState({
-  //     math: '',
-  //   })
-  // }
-  //
-  // setMarkdown(mathString) {
-  //   const { math } = this.state;
-  //   md.render(mathString);
-  //   const newMath = Parser(md.render(mathString));
-  //   if (math !== newMath) {
-  //     this.setState({
-  //       math: newMath
-  //     });
-  //   }
-  // }
+  exportMethods() {
+    const that = this;
+
+    window.clear = function () {
+      that.clear();
+    }
+
+    window.setMarkdown = function (mathString) {
+      window.clear();
+      that.setMarkdown(mathString);
+      let width = window.equationWidth();
+      let height = window.equationHeight();
+
+      return [width, height];
+    };
+
+    window.equationWidth = function() {
+      var result = null;
+      var equationSpan = document.getElementsByClassName('setMarkdown')[0];
+      if (equationSpan) {
+        result = equationSpan.offsetWidth;
+      }
+      return result;
+    }
+
+    window.equationHeight = function() {
+      var equationBox = document.getElementsByClassName('setMarkdown')[0];
+      if (equationBox) {
+        return equationBox.clientHeight;
+      } else {
+        return null;
+      }
+    }
+  }
+
+  clear() {
+    this.setState({
+      math: '',
+    })
+  }
+
+  setMarkdown(mathString) {
+    const { math } = this.state;
+    md.render(mathString);
+    const newMath = Parser(md.render(mathString));
+    if (math !== newMath) {
+      this.setState({
+        math: newMath
+      });
+    }
+  }
 
   render() {
     return (
@@ -155,7 +118,6 @@ export default class Editor extends React.PureComponent {
           <meta name="description" content="React Markdown" />
         </Helmet>
         <div>
-          <h1>No-editor</h1>
           <div
             className="setMarkdown"
             style={{display:'inline-block'}}

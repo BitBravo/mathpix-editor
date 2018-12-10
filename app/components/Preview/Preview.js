@@ -56,9 +56,6 @@ export default class Preview extends Component {
     this.state = {
       math: '',
     };
-    this.exportMethods = this.exportMethods.bind(this);
-    this.setMarkdown = this.setMarkdown.bind(this);
-    this.clear = this.clear.bind(this);
   }
 
   componentWillMount() {
@@ -66,7 +63,6 @@ export default class Preview extends Component {
   }
 
   componentDidMount() {
-    this.exportMethods();
     window.addEventListener('click', this.handleClick, false);
     this.preview.addEventListener('scroll', this.handleScroll);
     this.preview.addEventListener('mouseenter', () => {
@@ -79,81 +75,6 @@ export default class Preview extends Component {
     });
   }
 
-  exportMethods() {
-    const that = this;
-
-    window.clear = function () {
-      that.clear();
-    }
-
-    window.setMarkdown = function (mathString) {
-      window.clear();
-      let text = that.setMarkdown(mathString);
-      let width = window.equationWidth();
-      let height = window.equationHeight();
-
-      // return [width, height];
-
-      const w = width;//this.props.dialogWidth;
-      const h = height;//this.props.dialogHeight;
-      const left = window.screen.width / 2 - w / 2;
-      const top = window.screen.height / 2 - h / 2;
-
-
-      let win =  window.open(
-        '',
-        'text',
-        'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' +
-        w +
-        ', height=' +
-        h +
-        ', top=' +
-        top +
-        ', left=' +
-        left
-      );
-      win.document.body.innerHTML = "HTML => "+ text;
-      return win;
-
-    };
-
-    window.equationWidth = function() {
-      var result = null;
-      var equationSpan = document.getElementsByClassName('setMarkdown')[0];
-      if (equationSpan) {
-        result = equationSpan.offsetWidth;
-      }
-      return result;
-    }
-
-    window.equationHeight = function() {
-      var equationBox = document.getElementsByClassName('setMarkdown')[0];
-      if (equationBox) {
-        return equationBox.clientHeight;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  clear() {
-    this.setState({
-      math: '',
-    })
-  }
-
-  setMarkdown(mathString) {
-    const { math } = this.state;
-    md.render(mathString);
-    const newMath = Parser(md.render(mathString));
-    console.log('newMath=>', newMath);
-    if (math !== newMath) {
-      this.setState({
-        math: newMath
-      });
-    }
-    return newMath;
-  }
   componentWillReceiveProps(nextProps) {
     this.updateMath(nextProps.math);
   }
