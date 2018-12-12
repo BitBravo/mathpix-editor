@@ -1,45 +1,13 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import Preview from 'components/Preview';
-import 'libs/codemirror/markdown';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/xml/xml';
+import setMarkdown  from '../../libs/setMarkdown'
 import './style.scss';
-import hljs from "highlight.js";
-import Parser from "html-react-parser";
 
 import {mathDef} from "./data.js";
 
-const md = require('markdown-it')({
-  html: true,
-  xhtmlOut: false,
-  breaks: true,
-  langPrefix: 'language-',
-  linkify: false,
-  typographer: true,
-  quotes: '“”‘’',
-  highlight(str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(lang, str).value;
-      } catch (__) { } // eslint-disable-line
-    }
-
-    return '';
-  }
-})
-  .use(require('libs/mathParse')())
-  .use(require('markdown-it-footnote'))
-  .use(require('markdown-it-sub'))
-  .use(require('markdown-it-sup'))
-  .use(require('markdown-it-deflist'))
-  .use(require('markdown-it-mark'))
-  .use(require('markdown-it-highlightjs'), { auto: true, code: true })
-  .use(require('markdown-it-emoji'))
-  .use(require('markdown-it-ins'))
-  .use(require('libs/lineNumber'))
-  .use(require('markdown-it-ins'));
-
+const math3 = String.raw`
+\\[ y = \frac { \sum _ { i } w _ { i } y _ { i } } { \sum _ { i } w _ { i } } , i = 1,2 \ldots k \\]
+`;
 
 export default class Editor extends React.PureComponent {
   constructor(props) {
@@ -54,8 +22,8 @@ export default class Editor extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.exportMethods();
-    window.setMarkdown(this.state.markdownSrc)
+     this.exportMethods();
+      window.setMarkdown(math3);
   }
 
   exportMethods() {
@@ -63,11 +31,12 @@ export default class Editor extends React.PureComponent {
 
     window.clear = function () {
       that.clear();
-    }
+    };
 
     window.setMarkdown = function (mathString) {
       window.clear();
       that.setMarkdown(mathString);
+
       let width = window.equationWidth();
       let height = window.equationHeight();
 
@@ -75,22 +44,22 @@ export default class Editor extends React.PureComponent {
     };
 
     window.equationWidth = function() {
-      var result = null;
-      var equationSpan = document.getElementsByClassName('setMarkdown')[0];
+      let result = null;
+      const equationSpan = document.getElementById('setMarkdown');
       if (equationSpan) {
         result = equationSpan.offsetWidth;
       }
       return result;
-    }
+    };
 
     window.equationHeight = function() {
-      var equationBox = document.getElementsByClassName('setMarkdown')[0];
+      const equationBox = document.getElementById('setMarkdown');
       if (equationBox) {
         return equationBox.clientHeight;
       } else {
         return null;
       }
-    }
+    };
   }
 
   clear() {
@@ -101,8 +70,8 @@ export default class Editor extends React.PureComponent {
 
   setMarkdown(mathString) {
     const { math } = this.state;
-    md.render(mathString);
-    const newMath = Parser(md.render(mathString));
+    const newMath = setMarkdown(mathString);
+
     if (math !== newMath) {
       this.setState({
         math: newMath
@@ -118,11 +87,7 @@ export default class Editor extends React.PureComponent {
           <meta name="description" content="React Markdown" />
         </Helmet>
         <div>
-          <div
-            className="setMarkdown"
-            style={{display:'inline-block'}}
-            ref={(node) => { this.preview = node; }}
-          >
+          <div id='setMarkdown' style={{display:'inline-block'}} ref={(node) => { this.preview = node; }} >
             {this.state.math}
           </div>
         </div>
