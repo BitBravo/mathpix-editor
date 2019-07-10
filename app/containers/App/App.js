@@ -11,6 +11,7 @@ import { Helmet } from 'react-helmet';
 import { Switch, Route } from 'react-router-dom';
 
 import Editor from 'containers/Editor/Loadable';
+import NoEditor from 'containers/NoEditor/Loadable';
 import FeaturePage from 'containers/FeaturePage/Loadable';
 import NotFoundPage from 'containers/NotFoundPage/Loadable';
 import Header from 'components/Header';
@@ -27,6 +28,7 @@ const App = () => (
     <Header />
     <Switch>
       <Route exact path="/" component={Editor} />
+      <Route exact path="/no-editor" component={NoEditor} />
       <Route path="/test" component={FeaturePage} />
       <Route path="" component={NotFoundPage} />
     </Switch>

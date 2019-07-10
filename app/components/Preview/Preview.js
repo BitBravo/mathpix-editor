@@ -75,7 +75,6 @@ export default class Preview extends Component {
     });
   }
 
-
   componentWillReceiveProps(nextProps) {
     this.updateMath(nextProps.math);
   }
